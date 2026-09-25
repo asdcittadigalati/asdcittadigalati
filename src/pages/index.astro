@@ -2,14 +2,14 @@
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import Hero from "../components/Hero.astro";
-import NewsCard from "../components/NewsCard.astro";
+import SocialPost from "../components/SocialPost.astro";
 import NextMatch from "../components/NextMatch.astro";
 import SponsorStrip from "../components/SponsorStrip.astro";
 import KineticRibbon from "../components/KineticRibbon.astro";
 import societa from "../data/societa.json";
 import DirettaLive from "../components/DirettaLive.astro";
 
-const news = (await getCollection("news"))
+const social = (await getCollection("social"))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
 
@@ -28,15 +28,17 @@ const claimParole = righeClaim.map((riga) =>
 
     <DirettaLive />
 
-    <section class="news-section" aria-labelledby="news-title">
-      <div class="section-inner">
-        <h2 id="news-title" class="font-display">Ultime notizie</h2>
-        <div class="news-grid">
-          {news.map((post) => <NewsCard post={post} />)}
+    {social.length > 0 && (
+      <section class="social-section" aria-labelledby="social-title">
+        <div class="section-inner">
+          <h2 id="social-title" class="font-display">Dai social</h2>
+          <div class="social-grid">
+            {social.map((p) => <SocialPost link={p.data.link} date={p.data.date} />)}
+          </div>
+          <p class="all-news"><a href="/social">Tutti i post</a></p>
         </div>
-        <p class="all-news"><a href="/news">Tutte le news</a></p>
-      </div>
-    </section>
+      </section>
+    )}
 
     <NextMatch />
 
@@ -171,28 +173,28 @@ const claimParole = righeClaim.map((riga) =>
     color: var(--text);
     text-shadow: 0 2px 20px color-mix(in oklch, var(--bg) 85%, transparent);
   }
-  .news-section {
+  .social-section {
     padding: clamp(3rem, 8vw, 6rem) clamp(1rem, 4vw, 2.5rem) clamp(2rem, 6vw, 4rem);
   }
   .section-inner {
     max-width: 1200px;
     margin: 0 auto;
   }
-  .news-section h2 {
+  .social-section h2 {
     font-size: clamp(1.75rem, 4vw, 2.5rem);
     margin: 0 0 1.5rem;
   }
-  .news-grid {
+  .social-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 2.5rem 1.5rem;
   }
+  /* Tre colonne uguali: un riquadro social largo due colonne resterebbe
+     comunque stretto al centro (le piattaforme fissano la larghezza). */
   @media (min-width: 720px) {
-    .news-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    .news-grid > :global(a:first-child) {
-      grid-column: span 2;
+    .social-grid {
+      grid-template-columns: repeat(3, 1fr);
+      align-items: start;
     }
   }
   .all-news {
