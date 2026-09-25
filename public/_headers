@@ -1,0 +1,11 @@
+# ANTEPRIMA: nessuna indicizzazione finche' i contenuti sono fittizi.
+# Rimuovere questo blocco alla messa online (vedi docs/MESSA-ONLINE-CLOUDFLARE.md).
+/*
+  X-Robots-Tag: noindex, nofollow
+
+# I frame dell'hero hanno nomi fissi (f-000.webp...), quindi "immutable" li
+# congelerebbe nel browser anche dopo una rigenerazione: e' successo davvero il
+# 27/07/2026. Cache breve finche' i contenuti cambiano; per la cache lunga va
+# versionata la cartella (es. /hero-frames/v2/).
+/hero-frames/*
+  Cache-Control: public, max-age=3600, must-revalidate
