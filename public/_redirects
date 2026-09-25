@@ -1,0 +1,5 @@
+# Le news sono state sostituite dalla pagina Social (25/09/2026): i link
+# vecchi gia' condivisi portano li' invece che alla pagina di errore.
+# Stesso formato per Netlify e Cloudflare Pages.
+/news    /social  301
+/news/*  /social  301

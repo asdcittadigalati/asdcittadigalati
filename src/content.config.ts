@@ -10,17 +10,6 @@ import { glob } from "astro/loaders";
 const empty = <T extends z.ZodTypeAny>(s: T) =>
   z.preprocess((v) => (v === "" || v === null ? undefined : v), s);
 
-const news = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/news" }),
-  schema: z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    cover: empty(z.string().optional()),
-    // Testo alternativo della copertina: senza, l'immagine resta muta per chi
-    // usa uno screen reader. Opzionale perche' una notizia puo' non avere foto.
-    coverAlt: empty(z.string().optional()),
-  }),
-});
 const giocatori = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/giocatori" }),
   schema: z.object({
@@ -56,4 +45,4 @@ const social = defineCollection({
     date: z.coerce.date(),
   }),
 });
-export const collections = { news, giocatori, staff, sponsor, social };
+export const collections = { giocatori, staff, sponsor, social };

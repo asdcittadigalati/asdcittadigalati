@@ -52,18 +52,6 @@ collections:
         default: "{{now}}"
         hint: "Si compila da sola. Cambiala solo se aggiungi un post vecchio: i post sono in ordine dal piu' recente."
 
-  - name: "news"
-    label: "News"
-    folder: "src/content/news"
-    create: true
-    slug: "{{slug}}"
-    format: "frontmatter"
-    fields:
-      - { label: "Titolo", name: "title", widget: "string", required: true }
-      - { label: "Data", name: "date", widget: "datetime", required: true }
-      - { label: "Copertina", name: "cover", widget: "image", required: false, media_folder: "/img/uploads", public_folder: "/img/uploads" }
-      - { label: "Corpo", name: "body", widget: "markdown", required: false }
-
   - name: "giocatori"
     label: "Rosa"
     folder: "src/content/giocatori"

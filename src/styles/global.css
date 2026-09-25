@@ -21,9 +21,7 @@ img { max-width: 100%; display: block; }
 /* Transizioni tra pagine (View Transitions cross-documento, solo CSS).
    Niente router client: le pagine restano navigazioni vere e ogni script
    riparte da zero come sempre. Chrome/Edge/Safari fanno la scena continua,
-   Firefox naviga normalmente. La testata resta ferma (nome in Header.astro),
-   la foto delle news si trasforma nella copertina dell'articolo (nomi in
-   NewsCard.astro e news/[slug].astro). */
+   Firefox naviga normalmente. La testata resta ferma (nome in Header.astro). */
 @view-transition {
   navigation: auto;
 }
