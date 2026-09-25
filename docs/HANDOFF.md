@@ -4,8 +4,8 @@ Questo documento serve a due lettori diversi. La prima parte è per la **societ�
 (chi aggiorna il sito da `/admin` e chi deve fornire i materiali mancanti). La
 seconda è per lo **sviluppatore** che fa il deploy e la manutenzione tecnica.
 
-Stato del progetto a questa consegna: 8 pagine (`/`, `/squadra`, `/stagione`,
-`/news`, `/news/benvenuti`, `/club`, `/contatti`, `/privacy`), pannello di
+Stato del progetto a questa consegna: 7 pagine (`/`, `/squadra`, `/stagione`,
+`/social`, `/club`, `/contatti`, `/privacy`), pannello di
 gestione contenuti su `/admin`, `npm run build` e `npm test` verdi. Il sito
 **non è ancora online**: manca il collegamento a Netlify (vedi parte
 sviluppatore) e mancano alcuni contenuti reali (vedi sotto).
@@ -38,7 +38,7 @@ sezioni finte o "in costruzione").
 ### 1.2 Come si usa `/admin`
 
 Il sito ha un pannello di gestione contenuti (Sveltia CMS) all'indirizzo
-`https://<dominio-del-sito>/admin`. Serve per aggiornare notizie, rosa, staff,
+`https://<dominio-del-sito>/admin`. Serve per aggiungere i post social, aggiornare rosa, staff,
 sponsor **e i testi delle pagine** senza toccare codice.
 
 > **Per chi userà il pannello c'è una guida dedicata e più semplice:
@@ -51,10 +51,9 @@ Poi si entra da `/admin` con *Sign In with GitHub*.
 
 **Cosa si può gestire, e come**:
 
-- **News** (`Nuovo articolo`): titolo, data, immagine di copertina
-  (opzionale), corpo testo in formato semplice (markdown: paragrafi, titoli,
-  link, elenchi). Pubblicando, l'articolo appare automaticamente in home (le
-  ultime 3) e in `/news`.
+- **Social**: link di un post pubblico di Instagram, Facebook o TikTok e
+  data (si compila da sola). Il post appare da solo in home (gli ultimi 3) e
+  in `/social`; senza consenso privacy al suo posto c'è un segnaposto.
 - **Rosa**: nome, ruolo (Portiere / Difensore / Centrocampista / Attaccante),
   numero di maglia, foto. I giocatori compaiono in `/squadra` raggruppati per
   ruolo e ordinati per numero.
@@ -208,19 +207,11 @@ export default defineConfig({
 Poi collegare il dominio in Netlify: Site settings → Domain management → Add
 custom domain, seguendo le istruzioni Netlify per puntare i DNS.
 
-**Tre cose vanno fatte insieme al dominio**, perché tutte dipendono da `site`
-e prima genererebbero indirizzi su `localhost`:
-
-1. **Sitemap** — `npm i @astrojs/sitemap`, poi in `astro.config.mjs`:
-   `integrations: [sitemap({ filter: (p) => !p.includes('/admin') })]`
-2. **Feed RSS** — `npm i @astrojs/rss` e una pagina `src/pages/rss.xml.js`
-   che legga la collezione `news`.
-3. **Anteprima social per singolo articolo** — oggi ogni pagina dichiara la
-   stessa immagine (lo stemma). Va aggiunta una prop `image` a
-   `src/layouts/Base.astro` e passata da `src/pages/news/[slug].astro` con la
-   copertina dell'articolo. Conta più di quanto sembri: la maggior parte dei
-   visitatori arriva da un link condiviso su Facebook o Instagram, e oggi
-   quella condivisione mostra sempre la stessa immagine.
+**Una cosa va fatta insieme al dominio**, perché dipende da `site` e prima
+genererebbe indirizzi su `localhost`: la sitemap (`@astrojs/sitemap`). Feed
+RSS e anteprima per singolo articolo non servono più: le news sono state
+sostituite dalla pagina Social (25/09/2026). Per la sitemap: `npm i @astrojs/sitemap`, poi in
+`astro.config.mjs` `integrations: [sitemap({ filter: (p) => !p.includes('/admin') })]`.
 
 ### 2.3 Widget Tuttocampo: attivazione widget
 
@@ -326,10 +317,10 @@ npm run frames       # rigenera i frame hero (vedi 2.4)
 ```
 
 Struttura principale:
-- `src/pages/` — le 8 pagine del sito.
-- `src/components/` — Hero, Header, Footer, cursore-pallone, card news/
+- `src/pages/` — le 7 pagine del sito.
+- `src/components/` — Hero, Header, Footer, cursore-pallone, card post social/
   giocatore, fascia sponsor, widget Tuttocampo.
-- `src/content/` + `src/content.config.ts` — le 4 collezioni CMS (news,
+- `src/content/` + `src/content.config.ts` — le 4 collezioni CMS (social,
   giocatori, staff, sponsor), lette da Astro Content Collections.
 - `src/lib/tuttocampo.ts` — costanti e URL widget Tuttocampo (punto 2.3).
 - `src/lib/scrub.ts` — logica di mappatura scroll → frame dell'hero, coperta
@@ -390,11 +381,11 @@ Da completare tutta prima di puntare il dominio pubblico sul sito. Ogni voce
 - [ ] URL widget Tuttocampo generati e inseriti (punto 2.3), a campionato
       iniziato
 - [ ] Editor della società invitato su Netlify Identity e messo alla prova
-      su `/admin`: deve riuscire a pubblicare una news da solo
+      su `/admin`: deve riuscire ad aggiungere un post social da solo
 - [ ] `npm test` e `npm run build` verdi, Lighthouse rimisurato (punto 2.6)
 
 Migliorie note, non bloccanti, da valutare dopo il primo deploy: pagina 404
 personalizzata, pagina di ringraziamento dopo l'invio del form contatti,
-`robots.txt` e sitemap, paginazione della sezione News quando gli articoli
-supereranno la ventina, `favicon.ico` rigenerato dallo stemma (oggi i browser
+`robots.txt` e sitemap, paginazione della pagina Social quando i post
+supereranno il centinaio, `favicon.ico` rigenerato dallo stemma (oggi i browser
 moderni usano `favicon.svg`, che è già lo stemma corretto).

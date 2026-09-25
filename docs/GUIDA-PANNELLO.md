@@ -1,6 +1,6 @@
 # Come aggiornare il sito
 
-Guida per chi in società pubblica notizie e tiene aggiornata la rosa.
+Guida per chi in società aggiunge i post dei social e tiene aggiornata la rosa.
 Non serve saper programmare: si compilano dei campi e si preme un pulsante.
 
 ---
@@ -19,23 +19,32 @@ Da quel momento entri sempre da lì.
 
 ---
 
-## Pubblicare una notizia
+## Aggiungere un post dei social
 
-1. Nel menu a sinistra scegli **News**.
-2. Premi **New News** in alto.
-3. Compila:
-   - **Titolo**: come si chiamerà la notizia.
-   - **Data**: quando è successo.
-   - **Copertina**: la foto grande. Premi *Choose an image*, poi *Upload*.
-   - **Corpo**: il testo. Vai a capo per creare un nuovo paragrafo.
+Il sito non ha più le news: mostra i post di Instagram, Facebook e TikTok che
+parlano della squadra, di chiunque siano (la società, un giocatore, un tifoso,
+un giornale).
+
+1. Sul social apri il post, tocca **Condividi** (o i tre puntini) e poi
+   **Copia link**.
+2. Nel pannello scegli **Social** nel menu a sinistra e premi il pulsante in
+   alto per aggiungere un nuovo post.
+3. Incolla il link in **Link al post**. La **Data** si compila da sola:
+   cambiala solo se aggiungi un post vecchio, perché sul sito i post sono in
+   ordine dal più recente.
 4. Premi **Save**, poi **Publish**.
 
-Il sito si aggiorna da solo entro un paio di minuti. Non serve avvisare nessuno.
+Entro un paio di minuti il post compare in home (gli ultimi 3) e nella pagina
+Social. Non serve avvisare nessuno.
 
-> **Le foto**: prima di caricarle, rimpiccioliscile. Massimo 1200 pixel di lato
-> e sotto i 300 KB. Una foto appena scattata col telefono pesa dieci volte
-> tanto e rende il sito lentissimo per chi lo apre col telefono. Va bene
-> qualunque strumento gratuito, ad esempio squoosh.app.
+> **Da sapere**
+> - Il post deve essere **pubblico**: quelli di profili privati e quelli dentro
+>   i gruppi Facebook non si vedono.
+> - Facebook dal telefono: a volte il link copiato non basta e sul sito compare
+>   solo "Apri il post su Facebook". In quel caso apri il post dal computer e
+>   copia l'indirizzo dalla barra in alto del browser.
+> - Se l'autore cancella il post, al suo posto il riquadro dice che non è
+>   disponibile: toglilo dal pannello (aprilo e premi **Delete**).
 
 ---
 
@@ -48,6 +57,11 @@ dignitosa. **Non caricare la foto di un minorenne senza la liberatoria firmata
 da entrambi i genitori.**
 
 Per togliere un giocatore che ha lasciato: aprilo e premi **Delete**.
+
+> **Le foto**: prima di caricarle, rimpiccioliscile. Massimo 1200 pixel di lato
+> e sotto i 300 KB. Una foto appena scattata col telefono pesa dieci volte
+> tanto e rende il sito lentissimo per chi lo apre col telefono. Va bene
+> qualunque strumento gratuito, ad esempio squoosh.app.
 
 ---
 

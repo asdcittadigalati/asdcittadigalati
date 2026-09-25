@@ -53,7 +53,7 @@ ogni voce.
 
 | Cosa | Dove finisce | Note |
 |---|---|---|
-| 15-25 foto belle e recenti | Home, News, Club | Partite, tifosi, campo, spogliatoio, festeggiamenti. Più sono alte di risoluzione meglio è |
+| 15-25 foto belle e recenti | Home, Club | Partite, tifosi, campo, spogliatoio, festeggiamenti. Più sono alte di risoluzione meglio è |
 | Foto del campo Ducezio-Parafioriti | Pagina Club | Un paio, anche da drone se qualcuno ce l'ha |
 | Foto della prima squadra (di gruppo) | Home / Club | Quella ufficiale di inizio stagione appena si fa |
 
@@ -62,13 +62,12 @@ ogni voce.
 | Cosa | Serve per | Note |
 |---|---|---|
 | Dominio (es. cittadigalati.it) | Indirizzo del sito | **Va registrato a nome della società**, non dello sviluppatore. ~10-15€/anno. Possiamo occuparci noi della procedura insieme al presidente |
-| Chi gestirà le news dal pannello | Aggiornamenti | Nome ed email della persona (una o due) che pubblicherà le notizie: riceverà l'invito al pannello di gestione |
+| Chi gestirà i post social dal pannello | Aggiornamenti | Nome ed email della persona (una o due) che aggiungerà i post: riceverà l'invito al pannello di gestione |
 | Account Tuttocampo | Classifica e risultati automatici | Registrazione gratuita; servono gli URL widget del girone (Prima Categoria Girone D). Procedura in docs/HANDOFF.md §2.3 — può farla lo sviluppatore, serve solo decidere con che account |
 
 ## 7. Decisioni da prendere insieme
 
 - **Settore giovanile sul sito**: sì o no? Se sì, servono liberatorie per TUTTI i minori fotografati. In dubbio: si parte senza e si aggiunge dopo.
-- **La news di esempio sugli abbonamenti** cita prezzi e modalità inventate: la campagna abbonamenti reale esiste? Con che prezzi?
 - **Chi appare nei contatti**: la società vuole un modulo di contatto generico (già pronto) o anche nomi/numeri di persone specifiche?
 
 ---
@@ -87,6 +86,5 @@ grep -rn "FITTIZIO" src/ public/ --include="*.astro" --include="*.md" --include=
 | Rosa (22 giocatori) | `src/content/giocatori/*.md` |
 | Staff (5 persone) | `src/content/staff/*.md` |
 | Sponsor (8) | `src/content/sponsor/*.md` + loghi in `public/img/sponsor/*.svg` |
-| News (6 articoli) | `src/content/news/*.md` + cover in `public/img/news/*.svg` |
 | Storia del club | `src/pages/club.astro` (marker TESTO-STORIA) |
 | Dati legali | `src/components/Footer.astro`, `src/pages/contatti.astro`, `src/pages/privacy.astro` (marker DATI-SOCIETA) |
