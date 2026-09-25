@@ -1,0 +1,94 @@
+---
+// Un post social dentro la cornice del sito. Il riquadro ufficiale della
+// piattaforma sta in EmbedConsenso: senza consenso resta un segnaposto
+// leggero, con il link per aprire il post sul social.
+import EmbedConsenso from "./EmbedConsenso.astro";
+import { preparaPost, ALTEZZA, NOME } from "../lib/social";
+
+interface Props {
+  link: string;
+  date: Date;
+}
+const { link, date } = Astro.props;
+const post = await preparaPost(link);
+const nome = NOME[post.piattaforma];
+const quando = date.toLocaleDateString("it-IT", { day: "numeric", month: "short", timeZone: "Europe/Rome" });
+---
+<article class="social-card" data-reveal>
+  <p class="etichetta font-display">
+    <span>{nome}</span> · <time datetime={date.toISOString()}>{quando}</time>
+  </p>
+  {post.src && post.piattaforma !== "altro" ? (
+    <EmbedConsenso
+      src={post.src}
+      title={`Post ${nome} del ${quando}`}
+      servizio={nome}
+      altezza={`${ALTEZZA[post.piattaforma]}px`}
+      apri={link}
+      nota={`Il post è ospitato da ${nome}: per mostrarlo qui il browser deve collegarsi ai loro server, che possono registrare il tuo indirizzo IP e impostare cookie propri.`}
+    />
+  ) : (
+    <a class="solo-link" href={link} target="_blank" rel="noopener noreferrer">
+      Apri il post su {nome}
+    </a>
+  )}
+</article>
+<script>
+  // Instagram comunica l'altezza vera del post (messaggio MEASURE, verificato
+  // il 25/09/2026): il riquadro si adatta invece di restare all'altezza fissa
+  // di ALTEZZA.instagram.
+  addEventListener("message", (e) => {
+    if (e.origin !== "https://www.instagram.com" || typeof e.data !== "string") return;
+    let dati: { type?: string; details?: { height?: number } };
+    try {
+      dati = JSON.parse(e.data);
+    } catch {
+      return;
+    }
+    const altezza = dati.details?.height;
+    if (dati.type !== "MEASURE" || !altezza) return;
+    for (const f of document.querySelectorAll<HTMLIFrameElement>("iframe[src*='instagram.com']")) {
+      if (f.contentWindow === e.source) {
+        f.closest<HTMLElement>("[data-embed]")?.style.setProperty("--embed-h", `${altezza}px`);
+      }
+    }
+  });
+</script>
+<style>
+  /* Cornice gialloblu': filo superiore coi colori sociali, cartellino
+     giallo. */
+  .social-card {
+    position: relative;
+    background: var(--surface);
+    padding: 1.6rem 0.6rem 0.6rem;
+    border-top: 4px solid transparent;
+    border-image: linear-gradient(90deg, var(--giallo) 0 50%, var(--blu) 50% 100%) 1;
+  }
+  .etichetta {
+    position: absolute;
+    top: -0.9rem;
+    left: 1rem;
+    margin: 0;
+    background: var(--giallo);
+    color: var(--bg);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    padding: 0.28rem 0.7rem;
+  }
+  /* Finche' manca il consenso il segnaposto resta compatto: all'altezza del
+     riquadro vero (fino a 760px) la pagina diventerebbe una fila di scatole
+     vuote. L'altezza piena torna quando EmbedConsenso segna data-attivo. */
+  .social-card :global([data-embed]:not([data-attivo="1"])),
+  .social-card :global(.embed-blocco) {
+    height: auto;
+    min-height: 20rem;
+  }
+  .solo-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20rem;
+    color: var(--giallo);
+    border: 1px dashed color-mix(in oklch, var(--giallo) 55%, transparent);
+  }
+</style>

@@ -12,8 +12,9 @@ interface Props {
   servizio: string; // nome leggibile, es. "OpenStreetMap"
   altezza?: string;
   nota?: string;
+  apri?: string; // link al contenuto originale, per chi non vuole caricarlo qui
 }
-const { src, title, servizio, altezza = "100%", nota } = Astro.props;
+const { src, title, servizio, altezza = "100%", nota, apri } = Astro.props;
 const id = `embed-${Math.random().toString(36).slice(2, 9)}`;
 ---
 <div class="embed" data-embed data-servizio={servizio} style={`--embed-h:${altezza}`}>
@@ -35,7 +36,15 @@ const id = `embed-${Math.random().toString(36).slice(2, 9)}`;
         Ricorda la scelta
       </label>
     </div>
-    <p class="embed-link"><a href="/privacy">Come trattiamo i dati</a></p>
+    <p class="embed-link">
+      {apri && (
+        <>
+          <a href={apri} target="_blank" rel="noopener noreferrer">Apri su {servizio}</a>
+          {" · "}
+        </>
+      )}
+      <a href="/privacy">Come trattiamo i dati</a>
+    </p>
   </div>
 </div>
 

@@ -48,4 +48,12 @@ const sponsor = defineCollection({
     url: empty(z.string().url().optional()),
   }),
 });
-export const collections = { news, giocatori, staff, sponsor };
+// Post dei social incollati come link dal pannello (vedi src/lib/social.ts).
+const social = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/social" }),
+  schema: z.object({
+    link: z.string().url(),
+    date: z.coerce.date(),
+  }),
+});
+export const collections = { news, giocatori, staff, sponsor, social };

@@ -27,6 +27,31 @@ public_folder: "/img/uploads"
 locale: "it"
 
 collections:
+  - name: "social"
+    label: "Social"
+    label_singular: "Post"
+    description: "Incolla il link di un post pubblico di Instagram, Facebook o TikTok: sul sito compare da solo, in home e nella pagina Social."
+    folder: "src/content/social"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}{{minute}}{{second}}"
+    identifier_field: "link"
+    summary: "{{date | date('DD/MM/YYYY')}} · {{link}}"
+    sortable_fields: ["date"]
+    format: "frontmatter"
+    fields:
+      - label: "Link al post"
+        name: "link"
+        widget: "string"
+        required: true
+        hint: "Dal social: tocca Condividi (o i tre puntini) e poi Copia link, e incollalo qui. Il post deve essere pubblico: i profili privati e i post dentro i gruppi Facebook non si vedono. Facebook dal telefono: se sul sito il post compare solo come 'Apri il post', aprilo dal computer e copia l'indirizzo dalla barra in alto."
+        pattern: ["^https://([a-z]+\\.)?(instagram\\.com|facebook\\.com|fb\\.watch|tiktok\\.com)/\\S+$", "Serve un link di Instagram, Facebook o TikTok che inizi con https://"]
+      - label: "Data"
+        name: "date"
+        widget: "datetime"
+        required: true
+        default: "{{now}}"
+        hint: "Si compila da sola. Cambiala solo se aggiungi un post vecchio: i post sono in ordine dal piu' recente."
+
   - name: "news"
     label: "News"
     folder: "src/content/news"
