@@ -1,6 +1,9 @@
-# ANTEPRIMA: nessuna indicizzazione finche' i contenuti sono fittizi.
-# Rimuovere questo blocco alla messa online (vedi docs/MESSA-ONLINE-CLOUDFLARE.md).
+# Strict-Transport-Security: solo https, dopo la prima visita il browser non
+# prova piu' l'http.
+# X-Robots-Tag, ANTEPRIMA: nessuna indicizzazione finche' la rosa e' fittizia.
+# Togliere quella riga quando arriva la rosa vera (vedi docs/MESSA-ONLINE-CLOUDFLARE.md).
 /*
+  Strict-Transport-Security: max-age=31536000
   X-Robots-Tag: noindex, nofollow
 
 # I frame dell'hero hanno nomi fissi (f-000.webp...), quindi "immutable" li
