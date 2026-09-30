@@ -29,8 +29,9 @@ const datiCompleti = Boolean(societa.indirizzo && societa.email && societa.pec);
         {!datiCompleti && (
           <p class="da-completare">
             Indirizzo completo della sede, indirizzo email e PEC sono in corso di
-            pubblicazione: fino ad allora le richieste vanno inviate tramite il modulo
-            nella pagina <a href="/contatti">Contatti</a>.
+            pubblicazione: fino ad allora le richieste si inviano con un messaggio ai
+            profili social della società, elencati nella pagina
+            {" "}<a href="/contatti">Contatti</a>.
           </p>
         )}
         <p>
@@ -45,23 +46,9 @@ const datiCompleti = Boolean(societa.indirizzo && societa.email && societa.pec);
       <div class="inner">
         <h2 class="font-display">Quali dati raccogliamo, perché e per quanto</h2>
 
-        <h3>Modulo di contatto</h3>
-        <p>
-          Nome, indirizzo email e testo del messaggio, con data e ora dell'invio.
-          Servono solo a rispondere: la base giuridica è l'esecuzione di misure
-          precontrattuali su richiesta dell'interessato e il legittimo interesse a
-          dare riscontro a chi scrive (articolo 6, paragrafo 1, lettere b ed f).
-          Fornire i dati è libero, ma senza un indirizzo email non possiamo rispondere.
-        </p>
-        <p>
-          I messaggi restano disponibili per il tempo necessario a gestire la
-          richiesta e comunque non oltre <strong>24 mesi</strong>, salvo che servano
-          a far valere o difendere un diritto in sede giudiziaria.
-        </p>
-
         <h3>Dati di navigazione</h3>
         <p>
-          Il fornitore dell'hosting registra automaticamente gli accessi tecnici
+          Il fornitore dell'hosting (Cloudflare, vedi sotto) registra automaticamente gli accessi tecnici
           (indirizzo IP, data e ora, pagina richiesta, tipo di browser) per garantire
           sicurezza e funzionamento del servizio. Non vengono usati per profilare
           nessuno né incrociati con altri dati.
@@ -89,12 +76,23 @@ const datiCompleti = Boolean(societa.indirizzo && societa.email && societa.pec);
         </p>
         <ul>
           <li>
-            <strong>Netlify</strong>, per l'hosting del sito e la gestione del modulo
-            di contatto. È una società statunitense: il trasferimento di dati fuori
-            dall'Unione Europea avviene sulla base delle clausole contrattuali tipo
-            approvate dalla Commissione Europea.
+            <strong>Cloudflare, Inc.</strong>, per l'hosting del sito e la sua
+            distribuzione in rete: tratta i dati di navigazione per far funzionare e
+            proteggere il sito.
+          </li>
+          <li>
+            <strong>GitHub, Inc.</strong>, che conserva i contenuti del sito (testi e
+            fotografie pubblicate) e gestisce l'accesso al pannello con cui i
+            collaboratori della società li aggiornano.
           </li>
         </ul>
+        <p>
+          Entrambe sono società statunitensi: il trasferimento di dati fuori
+          dall'Unione Europea avviene sulla base della decisione di adeguatezza della
+          Commissione Europea del 10 luglio 2023 (EU-U.S. Data Privacy Framework), a cui
+          entrambe aderiscono, e delle clausole contrattuali tipo contenute nei loro
+          accordi sul trattamento dei dati.
+        </p>
         <p>
           I dati possono inoltre essere comunicati alle autorità pubbliche quando la
           legge lo impone.
