@@ -22,10 +22,10 @@ const sponsors = (await getCollection("sponsor")).sort(
             <li class:list={["logo-item", sponsor.data.livello]} data-nome={sponsor.data.nome}>
               {sponsor.data.url ? (
                 <a href={sponsor.data.url} target="_blank" rel="noopener noreferrer" class="logo-link">
-                  <img src={sponsor.data.logo} alt={`Logo ${sponsor.data.nome}`} class="logo-img" loading="lazy" />
+                  <img src={sponsor.data.logo} alt={`Logo ${sponsor.data.nome}`} class="logo-img" decoding="async" />
                 </a>
               ) : (
-                <img src={sponsor.data.logo} alt={`Logo ${sponsor.data.nome}`} class="logo-img" loading="lazy" />
+                <img src={sponsor.data.logo} alt={`Logo ${sponsor.data.nome}`} class="logo-img" decoding="async" />
               )}
             </li>
           ))}
@@ -33,7 +33,7 @@ const sponsors = (await getCollection("sponsor")).sort(
         <ul class="logos" aria-hidden="true">
           {sponsors.map((sponsor) => (
             <li class:list={["logo-item", sponsor.data.livello]} data-nome={sponsor.data.nome}>
-              <img src={sponsor.data.logo} alt="" class="logo-img" loading="lazy" />
+              <img src={sponsor.data.logo} alt="" class="logo-img" decoding="async" />
             </li>
           ))}
         </ul>
@@ -106,10 +106,15 @@ const sponsors = (await getCollection("sponsor")).sort(
       animation-play-state: paused;
     }
   }
-  /* Sul touch la pausa e' un toggle esplicito: tocca per fermare e leggere,
-     ritocca per far ripartire (classe gestita dallo script). */
+  /* Sul touch il nastro corre sempre: si ferma solo finche' il dito resta
+     appoggiato (classe gestita dallo script). Niente menu "salva immagine"
+     sulla pressione lunga. */
   .marquee.fermo .marquee-track {
     animation-play-state: paused;
+  }
+  .marquee {
+    -webkit-touch-callout: none;
+    user-select: none;
   }
   @keyframes marquee-scroll {
     from { transform: translateX(0); }
@@ -190,15 +195,35 @@ const sponsors = (await getCollection("sponsor")).sort(
   }
 </style>
 <script>
-  // Sul touch non esiste hover: il tocco sul nastro ferma la corsa per
-  // leggere i loghi, un secondo tocco la fa ripartire. I tocchi sui link
-  // restano navigazione e non togglano.
+  // Sul touch non esiste hover: il nastro si ferma solo finche' il dito resta
+  // appoggiato e riparte appena si stacca. Se il dito scorre la pagina il
+  // browser annulla il tocco (pointercancel) e il nastro riparte lo stesso.
+  // Un tocco breve su un logo con link resta un normale link.
   const nastroTouch = document.querySelector<HTMLElement>(".marquee");
-  if (nastroTouch && matchMedia("(hover: none)").matches) {
-    nastroTouch.addEventListener("click", (e) => {
-      if ((e.target as HTMLElement).closest("a")) return;
-      nastroTouch.classList.toggle("fermo");
+  if (nastroTouch) {
+    nastroTouch.addEventListener("pointerdown", (e) => {
+      if (e.pointerType !== "mouse") nastroTouch.classList.add("fermo");
     });
+    for (const fine of ["pointerup", "pointercancel", "pointerleave"]) {
+      nastroTouch.addEventListener(fine, () => nastroTouch.classList.remove("fermo"));
+    }
+    if (matchMedia("(hover: none)").matches) {
+      nastroTouch.addEventListener("contextmenu", (e) => e.preventDefault());
+    }
+
+    // I loghi arrivano dopo la partenza del nastro: Safari calcola lo
+    // spostamento (-50% della striscia) sulla larghezza di quel momento, quasi
+    // zero, e il nastro sembrava fermo o vuoto finche' non lo si toccava.
+    // A loghi pronti l'animazione riparte da capo con la larghezza vera.
+    const striscia = nastroTouch.querySelector<HTMLElement>(".marquee-track");
+    if (striscia) {
+      const loghi = [...striscia.querySelectorAll("img")];
+      Promise.all(loghi.map((img) => img.decode().catch(() => {}))).then(() => {
+        striscia.style.animation = "none";
+        void striscia.offsetWidth;
+        striscia.style.animation = "";
+      });
+    }
   }
 
   // Anteprima grande dei loghi: segue l'elemento su cui sta il mouse, sopra
