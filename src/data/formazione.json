@@ -1,0 +1,28 @@
+{
+  "titolo": "Formazione tipo",
+  "modulo": "4-3-3",
+  "portiere": "Salvatore Lanza",
+  "difensori": [
+    "Giuseppe Miraglia",
+    "Antonino Scaffidi",
+    "Marco Serranò",
+    "Francesco Alibrandi"
+  ],
+  "centrocampisti": [
+    "Paolo Ridolfo",
+    "Andrea Frisenda",
+    "Gaetano Amata"
+  ],
+  "trequartisti": [],
+  "attaccanti": [
+    "Matteo Franchina",
+    "Nino Calamunci",
+    "Carmelo Spanò"
+  ],
+  "panchina": [
+    "Cristian Vadalà",
+    "Emanuele Lo Presti",
+    "Simone Caputo",
+    "Luca Todaro"
+  ]
+}

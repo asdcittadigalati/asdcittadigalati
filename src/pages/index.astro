@@ -8,10 +8,19 @@ import SponsorStrip from "../components/SponsorStrip.astro";
 import KineticRibbon from "../components/KineticRibbon.astro";
 import societa from "../data/societa.json";
 import DirettaLive from "../components/DirettaLive.astro";
+import Formazione from "../components/Formazione.astro";
+import PlayerDialog from "../components/PlayerDialog.astro";
+import { componiFormazione } from "../lib/formazione";
+import datiFormazione from "../data/formazione.json";
 
 const social = (await getCollection("social"))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
+// Formazione dal pannello (voce "Formazione"): sempre visibile, anche incompleta.
+const formazione = componiFormazione(
+  datiFormazione,
+  (await getCollection("giocatori")).map((g) => g.data)
+);
 
 // Il claim si scrive dal pannello su piu' righe: ogni riga diventa un a capo.
 // Ogni riga viene spezzata in parole gia' qui, in build: servono al coro
@@ -42,6 +51,8 @@ const claimParole = righeClaim.map((riga) =>
 
     <NextMatch />
 
+    {formazione && <Formazione formazione={formazione} />}
+
     <!-- FOTO FITTIZIA generata: sostituire con una foto vera di pubblico al Ducezio -->
     <section class="paese" aria-labelledby="paese-claim">
       <img
@@ -67,6 +78,7 @@ const claimParole = righeClaim.map((riga) =>
     <KineticRibbon />
 
     <SponsorStrip />
+    <PlayerDialog />
   </main>
 </Base>
 <style>
