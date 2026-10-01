@@ -38,18 +38,6 @@ const claimParole = righeClaim.map((riga) =>
 
     <DirettaLive />
 
-    {social.length > 0 && (
-      <section class="social-section" aria-labelledby="social-title">
-        <div class="section-inner">
-          <h2 id="social-title" class="font-display">Dai social</h2>
-          <div class="social-grid">
-            {social.map((p) => <SocialPost link={p.data.link} date={p.data.date} />)}
-          </div>
-          <p class="all-news"><a href="/social">Tutti i post</a></p>
-        </div>
-      </section>
-    )}
-
     <NextMatch />
 
     <ClassificaHome />
@@ -81,6 +69,18 @@ const claimParole = righeClaim.map((riga) =>
     <KineticRibbon />
 
     <SponsorStrip />
+
+    {social.length > 0 && (
+      <section class="social-section" aria-labelledby="social-title">
+        <div class="section-inner">
+          <h2 id="social-title" class="font-display">Dai social</h2>
+          <div class="social-grid">
+            {social.map((p) => <SocialPost link={p.data.link} date={p.data.date} />)}
+          </div>
+          <p class="all-news"><a href="/social">Tutti i post</a></p>
+        </div>
+      </section>
+    )}
     <PlayerDialog />
   </main>
 </Base>
