@@ -3,12 +3,10 @@
 # quindi il pannello parla direttamente con GitHub: chi gestisce i contenuti
 # entra col proprio account GitHub e deve essere invitato come collaboratore
 # del repository.
-#
-# DA COMPILARE alla creazione del repository: sostituire UTENTE/REPOSITORY.
 backend:
   name: github
-  # AL TRASLOCO: diventa il repo sull'account GitHub della squadra.
-  repo: tanocalandi96-ciccio/asdcittadigalati
+  # Repo sull'account GitHub della squadra (dal 01/10/2026).
+  repo: asdcittadigalati/asdcittadigalati
   branch: main
   # L'accesso passa da /auth e /callback sul sito stesso (worker/index.mjs su
   # Cloudflare): servono perche' lo scambio finale con GitHub richiede un segreto
