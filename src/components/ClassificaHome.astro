@@ -1,0 +1,274 @@
+---
+// Classifica del girone in home. Effetto diverso dal tabellone a palette del
+// sito gemello Longi: qui la classifica si COSTRUISCE dal basso, come un muro.
+// Quando la sezione entra in vista le righe salgono al loro posto una sopra
+// l'altra partendo dall'ultima, poi le barre dei punti si riempiono da
+// sinistra e i numeri contano fino ai punti veri. La riga del Citta' di
+// Galati e' in giallo.
+//
+// Dati di Tuttocampo (src/lib/classifica.ts), due volte: alla pubblicazione
+// del sito (la pagina nasce gia' con la classifica, anche senza JS) e a ogni
+// visita da /api/classifica (Worker, cache 10 minuti), cosi' dopo ogni
+// giornata si aggiorna da sola. Senza JS o con reduced-motion tutto e'
+// visibile da subito.
+import { leggiClassifica, type RigaClassifica } from "../lib/classifica";
+import { WIDGET_URLS, TEAM_ID } from "../lib/tuttocampo";
+
+let squadre: RigaClassifica[] = [];
+try {
+  const r = await fetch(WIDGET_URLS.classifica!, { signal: AbortSignal.timeout(5000) });
+  if (r.ok) squadre = leggiClassifica(await r.text());
+} catch {
+  // Rete assente durante la compilazione: ci pensa l'aggiornamento in pagina.
+}
+const massimo = Math.max(1, ...squadre.map((s) => s.pt));
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+<section class="classifica-home" aria-labelledby="classifica-home-title">
+  <div class="inner">
+    <p class="kicker">Classifica 2026-27</p>
+    <h2 id="classifica-home-title" class="font-display">Prima Categoria, girone C</h2>
+
+    <ol class="muro" data-muro data-noi={TEAM_ID} style={`--n:${squadre.length}`}>
+      {squadre.map((s, i) => (
+        <li class:list={["riga", { noi: s.id === TEAM_ID }]} style={`--i:${i};--quota:${s.pt / massimo}`}>
+          <span class="pos font-display" aria-hidden="true">{pad(s.pos)}</span>
+          <span class="nome">
+            <span class="sr-only">{`${s.pos}°, ${s.nome}, ${s.pt} punti in ${s.g} partite`}</span>
+            <span aria-hidden="true">{s.nome}</span>
+          </span>
+          <span class="barra" aria-hidden="true"><span></span></span>
+          <span class="punti font-display" aria-hidden="true" data-punti={s.pt}>{s.pt}</span>
+        </li>
+      ))}
+    </ol>
+
+    <p class="fonte" data-fonte>
+      {squadre.length > 0 ? "Punti in classifica · dati Tuttocampo" : "La classifica del girone compare qui appena disponibile."}
+    </p>
+    <p class="rimando"><a href="/stagione">Risultati e marcatori</a></p>
+  </div>
+</section>
+
+<style>
+  /* Selettori sotto .classifica-home e :global: le righe aggiornate a ogni
+     visita sono create dallo script, fuori dallo scope che Astro assegna. */
+  .classifica-home {
+    padding: clamp(3rem, 8vw, 6rem) clamp(1rem, 4vw, 2.5rem);
+  }
+  .inner {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .kicker {
+    color: var(--oro);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0 0 0.35rem;
+  }
+  .classifica-home h2 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    margin: 0 0 1.5rem;
+  }
+  .muro {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .classifica-home :global(.riga) {
+    display: grid;
+    /* minmax(0, ...): un nome lungo non allarga la riga oltre lo schermo. */
+    grid-template-columns: 2.2ch minmax(0, 1fr) minmax(4rem, 34%) 2.6ch;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.45rem 0.75rem;
+    background: var(--surface);
+    border-left: 3px solid var(--blu);
+  }
+  .classifica-home :global(.riga.noi) {
+    border-left-color: var(--giallo);
+    background: color-mix(in oklch, var(--surface) 80%, var(--giallo) 20%);
+  }
+  .classifica-home :global(.pos) {
+    color: var(--oro);
+    font-variant-numeric: tabular-nums;
+  }
+  .classifica-home :global(.nome) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .classifica-home :global(.barra) {
+    height: 0.55rem;
+    background: color-mix(in oklch, var(--text) 10%, transparent);
+    overflow: hidden;
+  }
+  .classifica-home :global(.barra > span) {
+    display: block;
+    height: 100%;
+    background: linear-gradient(to right, var(--blu), color-mix(in oklch, var(--blu) 60%, var(--text)));
+    transform: scaleX(var(--quota));
+    transform-origin: left;
+  }
+  .classifica-home :global(.riga.noi .barra > span) {
+    background: linear-gradient(to right, var(--rosso), var(--giallo));
+  }
+  .classifica-home :global(.punti) {
+    text-align: right;
+    font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .classifica-home :global(.riga.noi .punti),
+  .classifica-home :global(.riga.noi .pos) {
+    color: var(--giallo);
+  }
+  .classifica-home :global(.sr-only) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Costruzione dal basso. "pronto" nasconde SOLO a script attivo (senza JS
+     tutto resta visibile); "on" arriva quando la sezione e' in vista. L'ultima
+     riga sale per prima: ritardo (n - 1 - i). Le barre partono a muro finito. */
+  @media (prefers-reduced-motion: no-preference) {
+    .muro.pronto :global(.riga) {
+      opacity: 0;
+      transform: translateY(1.5rem) scaleY(0.6);
+      transform-origin: bottom;
+    }
+    .muro.pronto :global(.barra > span) {
+      transform: scaleX(0);
+    }
+    .muro.on :global(.riga) {
+      opacity: 1;
+      transform: none;
+      transition-property: opacity, transform;
+      transition-duration: 0.3s, 0.45s;
+      transition-timing-function: ease-out, var(--ease-out-quart);
+      transition-delay: calc((var(--n) - 1 - var(--i)) * 70ms);
+    }
+    .muro.on :global(.barra > span) {
+      transform: scaleX(var(--quota));
+      transition: transform 0.8s var(--ease-out-quart);
+      transition-delay: calc(var(--n) * 70ms + var(--i) * 35ms);
+    }
+  }
+
+  .fonte {
+    margin: 1rem 0 0;
+    font-size: 0.8rem;
+    color: color-mix(in oklch, var(--text) 62%, transparent);
+  }
+  .rimando {
+    margin: 0.75rem 0 0;
+  }
+  .rimando a {
+    color: var(--oro);
+    text-decoration: none;
+  }
+  .rimando a:hover,
+  .rimando a:focus-visible {
+    text-decoration: underline;
+  }
+</style>
+
+<script>
+  import type { RigaClassifica } from "../lib/classifica";
+
+  const muro = document.querySelector<HTMLOListElement>("[data-muro]");
+  if (muro) {
+    const animare = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let visto = false;
+
+    // Punti che contano da 0 insieme alla barra della propria riga.
+    const conta = () => {
+      const n = Number(getComputedStyle(muro).getPropertyValue("--n")) || 0;
+      muro.querySelectorAll<HTMLElement>("[data-punti]").forEach((el, i) => {
+        const target = Number(el.dataset.punti) || 0;
+        el.textContent = "0";
+        if (target <= 0) return;
+        const t0 = performance.now() + n * 70 + i * 35;
+        const step = (t: number) => {
+          const p = Math.min(1, Math.max(0, (t - t0) / 800));
+          el.textContent = String(Math.round(target * (1 - Math.pow(1 - p, 3))));
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      });
+    };
+    const costruisci = () => {
+      muro.classList.remove("on");
+      void muro.offsetWidth;
+      muro.classList.add("on");
+      conta();
+    };
+
+    if (animare) {
+      muro.classList.add("pronto");
+      const io = new IntersectionObserver(
+        ([e]) => {
+          if (!e.isIntersecting) return;
+          io.disconnect();
+          visto = true;
+          costruisci();
+        },
+        { threshold: 0.2 }
+      );
+      io.observe(muro);
+    }
+
+    // Stessa struttura delle righe scritte da Astro (sopra).
+    const creaRiga = (s: RigaClassifica, i: number, massimo: number) => {
+      const li = document.createElement("li");
+      li.className = s.id === muro.dataset.noi ? "riga noi" : "riga";
+      li.style.setProperty("--i", String(i));
+      li.style.setProperty("--quota", String(s.pt / massimo));
+      const span = (classe: string, testo = "") => {
+        const el = document.createElement("span");
+        el.className = classe;
+        el.textContent = testo;
+        return el;
+      };
+      const pos = span("pos font-display", String(s.pos).padStart(2, "0"));
+      pos.setAttribute("aria-hidden", "true");
+      const nome = span("nome");
+      const visibile = span("", s.nome);
+      visibile.setAttribute("aria-hidden", "true");
+      nome.append(span("sr-only", `${s.pos}°, ${s.nome}, ${s.pt} punti in ${s.g} partite`), visibile);
+      const barra = span("barra");
+      barra.setAttribute("aria-hidden", "true");
+      barra.append(document.createElement("span"));
+      const punti = span("punti font-display", String(s.pt));
+      punti.setAttribute("aria-hidden", "true");
+      punti.dataset.punti = String(s.pt);
+      li.append(pos, nome, barra, punti);
+      return li;
+    };
+
+    // Aggiornamento a ogni visita: punti e posizioni di adesso. Se la
+    // richiesta fallisce resta quello che c'e'.
+    fetch("/api/classifica")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((dati: { aggiornata: string; squadre: RigaClassifica[] } | null) => {
+        if (!dati?.squadre?.length) return;
+        const massimo = Math.max(1, ...dati.squadre.map((s) => s.pt));
+        muro.replaceChildren(...dati.squadre.map((s, i) => creaRiga(s, i, massimo)));
+        muro.style.setProperty("--n", String(dati.squadre.length));
+        const fonte = document.querySelector<HTMLElement>("[data-fonte]");
+        if (fonte) {
+          const ora = new Date(dati.aggiornata).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+          fonte.textContent = `Punti in classifica · dati Tuttocampo, aggiornati alle ${ora}`;
+        }
+        if (visto) costruisci();
+      })
+      .catch(() => {});
+  }
+</script>
