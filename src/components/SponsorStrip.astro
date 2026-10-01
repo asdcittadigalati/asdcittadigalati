@@ -130,8 +130,6 @@ const sponsors = (await getCollection("sponsor")).sort(
     height: clamp(5.25rem, 8vw, 5.75rem);
     width: auto;
     border-radius: 4px;
-    filter: grayscale(1);
-    transition: filter 0.3s var(--ease-out-quart);
   }
   .logo-item.main .logo-img {
     height: clamp(6.5rem, 10vw, 7.5rem);
@@ -139,9 +137,17 @@ const sponsors = (await getCollection("sponsor")).sort(
   .logo-item.tecnico .logo-img {
     height: clamp(5.75rem, 9vw, 6.5rem);
   }
-  .logo-item:hover .logo-img,
-  .logo-item:focus-within .logo-img {
-    filter: grayscale(0);
+  /* Bianco e nero solo dove l'hover esiste: sul touch il colore tornava
+     soltanto toccando il logo, e gli sponsor vanno visti sempre a colori. */
+  @media (hover: hover) and (pointer: fine) {
+    .logo-img {
+      filter: grayscale(1);
+      transition: filter 0.3s var(--ease-out-quart);
+    }
+    .logo-item:hover .logo-img,
+    .logo-item:focus-within .logo-img {
+      filter: grayscale(0);
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .marquee-track {
