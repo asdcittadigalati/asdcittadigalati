@@ -2,12 +2,12 @@
 import Base from "../layouts/Base.astro";
 import societa from "../data/societa.json";
 ---
-<Base title="Contatti" description="Contatti e form di contatto dell'ASD Città di Galati">
+<Base title="Contatti" description="Contatti dell'ASD Città di Galati">
   <main id="main" tabindex="-1">
     <section class="intro">
       <div class="inner">
         <h1 class="font-display">Contatti</h1>
-        <p class="kicker">Scrivici per tesseramenti, collaborazioni o qualsiasi altra richiesta.</p>
+        <p class="kicker">Per tesseramenti, collaborazioni o qualsiasi altra richiesta, ecco come raggiungerci.</p>
       </div>
     </section>
 
@@ -16,39 +16,7 @@ import societa from "../data/societa.json";
     </div>
 
     <section class="contatti-section">
-      <div class="inner grid">
-        <!-- action: dopo l'invio si resta dentro il sito invece di finire
-             sulla schermata standard di Netlify. -->
-        <form name="contatti" method="POST" action="/grazie" data-netlify="true" netlify-honeypot="bot-field" class="contact-form">
-          <input type="hidden" name="form-name" value="contatti" />
-          <p class="hidden-field">
-            <label>
-              Non compilare questo campo se sei umano
-              <input name="bot-field" />
-            </label>
-          </p>
-
-          <div class="field">
-            <label for="nome">Nome e cognome</label>
-            <input id="nome" name="nome" type="text" required autocomplete="name" />
-          </div>
-          <div class="field">
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" required autocomplete="email" />
-          </div>
-          <div class="field">
-            <label for="messaggio">Messaggio</label>
-            <textarea id="messaggio" name="messaggio" rows="6" required></textarea>
-          </div>
-          <button type="submit">Invia messaggio</button>
-          <!-- Informativa nel punto in cui i dati vengono raccolti: e' quanto
-               chiede l'articolo 13 del GDPR, non basta averla in fondo. -->
-          <p class="form-privacy">
-            I dati inseriti servono solo a rispondere e non vengono usati per altro.
-            Leggi l'<a href="/privacy">informativa privacy</a>.
-          </p>
-        </form>
-
+      <div class="inner">
         <aside class="dati-societari">
           <h2 class="font-display">La società</h2>
           <p class="font-display club-name">{societa.denominazioneBreve}</p>
@@ -114,76 +82,13 @@ import societa from "../data/societa.json";
   .contatti-section {
     padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2.5rem) clamp(3rem, 8vw, 6rem);
   }
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(2rem, 5vw, 3rem);
-  }
-  @media (min-width: 860px) {
-    .grid {
-      grid-template-columns: 3fr 2fr;
-      align-items: start;
-    }
-  }
-  .contact-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-  .hidden-field {
-    display: none;
-  }
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-  .field label {
-    font-weight: 700;
-  }
-  .field input,
-  .field textarea {
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid color-mix(in oklch, var(--text) 30%, transparent);
-    border-radius: 2px;
-    padding: 0.65rem 0.8rem;
-    font: inherit;
-  }
-  .field input:focus-visible,
-  .field textarea:focus-visible {
-    border-color: var(--giallo);
-  }
-  .field textarea {
-    resize: vertical;
-  }
-  .form-privacy {
-    margin: 0.9rem 0 0;
-    font-size: 0.8rem;
-    color: color-mix(in oklch, var(--text) 72%, transparent);
-    max-width: 52ch;
-  }
-  .form-privacy a { color: var(--giallo); }
   .da-confermare {
     color: var(--oro);
     font-size: 0.85rem;
     margin-top: 0.6rem;
   }
-  .contact-form button {
-    align-self: flex-start;
-    padding: 0.8rem 2rem;
-    background: var(--giallo);
-    color: var(--bg);
-    border: none;
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    cursor: pointer;
-  }
-  .contact-form button:hover,
-  .contact-form button:focus-visible {
-    background: var(--oro);
-  }
   .dati-societari {
+    max-width: 640px;
     background: var(--surface);
     padding: clamp(1.5rem, 4vw, 2rem);
   }

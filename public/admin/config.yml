@@ -3,18 +3,16 @@
 # quindi il pannello parla direttamente con GitHub: chi gestisce i contenuti
 # entra col proprio account GitHub e deve essere invitato come collaboratore
 # del repository.
-#
-# DA COMPILARE alla creazione del repository: sostituire UTENTE/REPOSITORY.
 backend:
   name: github
-  repo: tanocalandi96-ciccio/asdcittadigalati
+  # Repo sull'account GitHub della squadra (dal 01/10/2026).
+  repo: asdcittadigalati/asdcittadigalati
   branch: main
-  # L'accesso passa da due funzioni ospitate sul sito stesso (netlify/functions):
-  # servono perche' lo scambio finale con GitHub richiede un segreto che non puo'
-  # stare in una pagina web. Nessun servizio esterno, nessun account in piu'.
-  # ALLA MESSA ONLINE: qui va il dominio definitivo, insieme a quello in
-  # astro.config.mjs e all'indirizzo di callback nell'applicazione GitHub.
-  base_url: https://citta-di-galati-anteprima.netlify.app
+  # L'accesso passa da /auth e /callback sul sito stesso (worker/index.mjs su
+  # Cloudflare): servono perche' lo scambio finale con GitHub richiede un segreto
+  # che non puo' stare in una pagina web. Nessun servizio esterno in piu'.
+  # Il callback dell'applicazione OAuth su GitHub deve essere lo stesso dominio.
+  base_url: https://asdcittadigalati.it
 
 # Backend locale per le prove in sviluppo: decommentare e lanciare
 # `npx @sveltia/cms-proxy-server` per scrivere sul disco senza passare da
@@ -27,17 +25,30 @@ public_folder: "/img/uploads"
 locale: "it"
 
 collections:
-  - name: "news"
-    label: "News"
-    folder: "src/content/news"
+  - name: "social"
+    label: "Social"
+    label_singular: "Post"
+    description: "Incolla il link di un post pubblico di Instagram, Facebook o TikTok: sul sito compare da solo, in home e nella pagina Social."
+    folder: "src/content/social"
     create: true
-    slug: "{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}{{minute}}{{second}}"
+    identifier_field: "link"
+    summary: "{{date | date('DD/MM/YYYY')}} · {{link}}"
+    sortable_fields: ["date"]
     format: "frontmatter"
     fields:
-      - { label: "Titolo", name: "title", widget: "string", required: true }
-      - { label: "Data", name: "date", widget: "datetime", required: true }
-      - { label: "Copertina", name: "cover", widget: "image", required: false, media_folder: "/img/uploads", public_folder: "/img/uploads" }
-      - { label: "Corpo", name: "body", widget: "markdown", required: false }
+      - label: "Link al post"
+        name: "link"
+        widget: "string"
+        required: true
+        hint: "Dal social: tocca Condividi (o i tre puntini) e poi Copia link, e incollalo qui. Il post deve essere pubblico: i profili privati e i post dentro i gruppi Facebook non si vedono. Facebook dal telefono: se sul sito il post compare solo come 'Apri il post', aprilo dal computer e copia l'indirizzo dalla barra in alto."
+        pattern: ["^https://([a-z]+\\.)?(instagram\\.com|facebook\\.com|fb\\.watch|tiktok\\.com)/\\S+$", "Serve un link di Instagram, Facebook o TikTok che inizi con https://"]
+      - label: "Data"
+        name: "date"
+        widget: "datetime"
+        required: true
+        default: "{{now}}"
+        hint: "Si compila da sola. Cambiala solo se aggiungi un post vecchio: i post sono in ordine dal piu' recente."
 
   - name: "giocatori"
     label: "Rosa"

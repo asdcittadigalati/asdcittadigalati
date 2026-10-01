@@ -12,14 +12,17 @@ interface Props {
   servizio: string; // nome leggibile, es. "OpenStreetMap"
   altezza?: string;
   nota?: string;
+  apri?: string; // link al contenuto originale, per chi non vuole caricarlo qui
+  // false: il riquadro non scorre al suo interno, rotella e dito fanno scorrere la pagina.
+  scorre?: boolean;
 }
-const { src, title, servizio, altezza = "100%", nota } = Astro.props;
+const { src, title, servizio, altezza = "100%", nota, apri, scorre = true } = Astro.props;
 const id = `embed-${Math.random().toString(36).slice(2, 9)}`;
 ---
-<div class="embed" data-embed data-servizio={servizio} style={`--embed-h:${altezza}`}>
+<div class="embed" data-embed data-servizio={servizio} data-fisso={scorre ? undefined : ""} style={`--embed-h:${altezza}`}>
   <!-- Il contenuto vero sta in un <template>: inerte finche' non si accetta. -->
   <template data-embed-template>
-    <iframe src={src} title={title} loading="lazy"></iframe>
+    <iframe src={src} title={title} loading="lazy" scrolling={scorre ? undefined : "no"}></iframe>
   </template>
 
   <div class="embed-blocco" id={id}>
@@ -35,7 +38,15 @@ const id = `embed-${Math.random().toString(36).slice(2, 9)}`;
         Ricorda la scelta
       </label>
     </div>
-    <p class="embed-link"><a href="/privacy">Come trattiamo i dati</a></p>
+    <p class="embed-link">
+      {apri && (
+        <>
+          <a href={apri} target="_blank" rel="noopener noreferrer">Apri su {servizio}</a>
+          {" · "}
+        </>
+      )}
+      <a href="/privacy">Come trattiamo i dati</a>
+    </p>
   </div>
 </div>
 
@@ -44,6 +55,14 @@ const id = `embed-${Math.random().toString(36).slice(2, 9)}`;
     position: relative;
     min-height: var(--embed-h, 100%);
     height: var(--embed-h, 100%);
+  }
+  /* Su telefono un riquadro che non deve scorrere non deve nemmeno prendersi
+     il dito: senza questo il trascinamento finiva nell'iframe invece di far
+     scorrere la pagina (segnalato sul riquadro Prossima partita). */
+  @media (hover: none) {
+    .embed[data-fisso] :global(iframe) {
+      pointer-events: none;
+    }
   }
   .embed :global(iframe) {
     width: 100%;

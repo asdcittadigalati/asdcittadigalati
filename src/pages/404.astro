@@ -1,12 +1,13 @@
 ---
-// Pagina di errore: Netlify la serve da sola per qualunque indirizzo
-// inesistente, purche' il file si chiami 404.html nella cartella pubblicata.
+// Pagina di errore: Cloudflare la serve per qualunque indirizzo inesistente
+// (not_found_handling in wrangler.jsonc), purche' il file si chiami 404.html
+// nella cartella pubblicata.
 import Base from "../layouts/Base.astro";
 
 const scorciatoie = [
   ["/squadra", "La rosa"],
   ["/stagione", "Classifica e risultati"],
-  ["/news", "Ultime notizie"],
+  ["/social", "Dai social"],
   ["/contatti", "Contatti"],
 ];
 ---

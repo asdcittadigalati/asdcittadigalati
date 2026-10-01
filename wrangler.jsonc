@@ -1,0 +1,19 @@
+// Cloudflare Workers (build automatica da GitHub a ogni salvataggio dal pannello).
+// "name" deve coincidere con il nome del Worker nella dashboard Cloudflare.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "asdcittadigalati",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-09-30",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // I link del sito sono senza barra finale (/social): serviti direttamente, senza redirect.
+    "html_handling": "drop-trailing-slash",
+    // Indirizzi inesistenti: la pagina 404 del sito invece di una pagina bianca.
+    "not_found_handling": "404-page",
+    // Pagine attraverso il Worker (redirect http -> https, pannello); immagini,
+    // script e frame dell'hero no, cosi' non consumano richieste del piano gratuito.
+    "run_worker_first": ["/*", "!/_astro/*", "!/img/*", "!/hero-frames/*"]
+  }
+}

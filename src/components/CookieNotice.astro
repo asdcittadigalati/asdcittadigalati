@@ -14,8 +14,9 @@
   <div class="cn-inner">
     <p class="cn-testo">
       Questo sito non usa cookie di profilazione e non ha statistiche di
-      navigazione. Alcuni contenuti però arrivano da altri siti, la mappa e i
-      dati del campionato: caricarli significa collegarsi ai loro server.
+      navigazione. Alcuni contenuti però arrivano da altri siti, la mappa, i
+      dati del campionato, il video in diretta e i post dei social: caricarli
+      significa collegarsi ai loro server.
       <a href="/privacy">Informativa completa</a>
     </p>
     <div class="cn-azioni">
@@ -87,7 +88,14 @@
 
   const barra = document.getElementById("cookie-notice");
   if (barra) {
+    // La barra e' fissa in fondo allo schermo: finche' e' aperta la pagina si
+    // allunga della sua altezza, altrimenti copre l'ultima riga del footer.
+    const spazio = new ResizeObserver(() => {
+      document.body.style.paddingBottom = `${barra.offsetHeight}px`;
+    });
     const nascondi = () => {
+      spazio.disconnect();
+      document.body.style.paddingBottom = "";
       barra.classList.remove("is-visible");
       const fine = () => (barra.hidden = true);
       if (matchMedia("(prefers-reduced-motion: reduce)").matches) fine();
@@ -98,6 +106,7 @@
       // Scelta gia' fatta: la barra non deve nemmeno esistere per la tastiera.
       barra.hidden = true;
     } else {
+      spazio.observe(barra);
       requestAnimationFrame(() => barra.classList.add("is-visible"));
       barra.querySelector("[data-cn-accetta]")?.addEventListener("click", () => {
         scriviConsenso("accettato");

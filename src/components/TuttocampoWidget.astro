@@ -76,6 +76,14 @@ const MIN_HEIGHT: Record<WidgetType, string> = {
   prossimaPartita: "380px",
 };
 
+// I box partita di Tuttocampo sono impaginati sempre 20-40px piu' alti della
+// finestra che li contiene (misurato il 29/09/2026 con il contenuto reale:
+// circa 280px di contenuto dentro 380px, ma il documento ne dichiara 400-420).
+// Risultato: il riquadro scorreva al suo interno e si prendeva la rotella del
+// mouse o il dito, bloccando lo scorrimento della pagina. Il contenuto vero ci
+// sta tutto, quindi lo scorrimento interno si spegne.
+const SENZA_SCORRIMENTO: WidgetType[] = ["partita", "prossimaPartita"];
+
 const boxId = `widget-box-${type}`;
 const fallbackId = `widget-fallback-${type}`;
 ---
@@ -88,6 +96,7 @@ const fallbackId = `widget-fallback-${type}`;
           title={title}
           servizio="Tuttocampo"
           altezza={MIN_HEIGHT[type]}
+          scorre={!SENZA_SCORRIMENTO.includes(type)}
           nota="Classifica e risultati sono forniti da Tuttocampo. Per mostrarli il browser deve collegarsi ai loro server, che possono impostare cookie propri."
         />
       </div>
