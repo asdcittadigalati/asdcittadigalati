@@ -11,7 +11,7 @@ export const TEAM_PAGE = "https://www.tuttocampo.it/Sicilia/PrimaCategoria/Giron
 // da solo senza che nessuno tocchi niente. Per bloccare una stagione passata
 // esiste il parametro "?y=2025-26", che qui non usiamo di proposito: mostrare
 // la classifica dell'anno scorso sotto il titolo di quest'anno confonde.
-const GIRONE = "cc624f19-d248-45cb-8347-94fe16ecd4bf";
+const GIRONE = "fd57dc48-3674-40a8-917b-561783852051";
 
 // Tipi che Tuttocampo offre davvero (verificati uno per uno: un tipo
 // "Calendario" NON esiste, quell'URL risponde 404).
