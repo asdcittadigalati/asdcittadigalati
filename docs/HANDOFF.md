@@ -318,7 +318,7 @@ npm run frames       # rigenera i frame hero (vedi 2.4)
 
 Struttura principale:
 - `src/pages/` — le 7 pagine del sito.
-- `src/components/` — Hero, Header, Footer, cursore-pallone, card post social/
+- `src/components/` — Hero, Header, Footer, card post social/
   giocatore, fascia sponsor, widget Tuttocampo.
 - `src/content/` + `src/content.config.ts` — le 4 collezioni CMS (social,
   giocatori, staff, sponsor), lette da Astro Content Collections.
