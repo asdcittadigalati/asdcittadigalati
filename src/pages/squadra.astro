@@ -4,6 +4,7 @@ import Base from "../layouts/Base.astro";
 import PlayerCard from "../components/PlayerCard.astro";
 import PlayerWall from "../components/PlayerWall.astro";
 import PlayerDialog from "../components/PlayerDialog.astro";
+import StaffList from "../components/StaffList.astro";
 
 const ROLE_ORDER = ["Portiere", "Difensore", "Centrocampista", "Attaccante"] as const;
 const ROLE_LABELS: Record<(typeof ROLE_ORDER)[number], string> = {
@@ -22,7 +23,7 @@ const gruppi = ROLE_ORDER.map((ruolo) => ({
     .sort((a, b) => (a.data.numero ?? 999) - (b.data.numero ?? 999)),
 })).filter((g) => g.giocatori.length > 0);
 
-const staff = (await getCollection("staff")).sort(
+const staff = (await getCollection("staff", (m) => m.data.sezione === "Staff tecnico")).sort(
   (a, b) => a.data.ordine - b.data.ordine || a.data.nome.localeCompare(b.data.nome, "it")
 );
 
@@ -71,23 +72,7 @@ const rosaOrdinata = [...giocatori].sort(
       <section class="staff-section">
         <div class="inner">
           <h2 class="font-display">Staff</h2>
-          <ul class="staff-list">
-            {staff.map((membro) => {
-              const hasFoto = Boolean(membro.data.foto);
-              const alt = hasFoto
-                ? `Foto di ${membro.data.nome}`
-                : `Segnaposto: foto non disponibile per ${membro.data.nome}`;
-              return (
-                <li>
-                  <img src={membro.data.foto || "/img/silhouette.svg"} alt={alt} loading="lazy" />
-                  <div>
-                    <p class="nome">{membro.data.nome}</p>
-                    <p class="incarico">{membro.data.incarico}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <StaffList persone={staff} />
         </div>
       </section>
     )}
@@ -141,37 +126,5 @@ const rosaOrdinata = [...giocatori].sort(
   .staff-section h2 {
     font-size: clamp(1.4rem, 3.5vw, 2rem);
     margin: 0 0 1.5rem;
-  }
-  .staff-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1.5rem;
-  }
-  .staff-list li {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  .staff-list img {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-    border: 1px solid var(--oro);
-  }
-  .staff-list .nome {
-    font-family: var(--font-display);
-    text-transform: uppercase;
-    font-size: 1rem;
-    margin: 0;
-  }
-  .staff-list .incarico {
-    color: var(--oro);
-    font-size: 0.85rem;
-    margin: 0.2rem 0 0;
   }
 </style>

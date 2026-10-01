@@ -1,0 +1,62 @@
+---
+// Elenco persone con foto tonda, nome e incarico: staff tecnico nella pagina
+// Squadra, dirigenza nella pagina Club. Senza foto compare la silhouette.
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  persone: CollectionEntry<"staff">[];
+}
+const { persone } = Astro.props;
+---
+<ul class="staff-list">
+  {persone.map((membro) => {
+    const hasFoto = Boolean(membro.data.foto);
+    const alt = hasFoto
+      ? `Foto di ${membro.data.nome}`
+      : `Segnaposto: foto non disponibile per ${membro.data.nome}`;
+    return (
+      <li>
+        <img src={membro.data.foto || "/img/silhouette.svg"} alt={alt} loading="lazy" />
+        <div>
+          <p class="nome">{membro.data.nome}</p>
+          <p class="incarico">{membro.data.incarico}</p>
+        </div>
+      </li>
+    );
+  })}
+</ul>
+<style>
+  .staff-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+  .staff-list li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .staff-list img {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: top;
+    flex-shrink: 0;
+    border: 1px solid var(--oro);
+  }
+  .staff-list .nome {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: 1rem;
+    margin: 0;
+  }
+  .staff-list .incarico {
+    color: var(--oro);
+    font-size: 0.85rem;
+    margin: 0.2rem 0 0;
+  }
+</style>

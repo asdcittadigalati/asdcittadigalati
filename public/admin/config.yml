@@ -68,7 +68,7 @@ collections:
       - { label: "Foto", name: "foto", widget: "image", required: false, media_folder: "/img/uploads", public_folder: "/img/uploads" }
 
   - name: "staff"
-    label: "Staff"
+    label: "Staff e dirigenza"
     folder: "src/content/staff"
     create: true
     slug: "{{fields.nome}}"
@@ -76,9 +76,73 @@ collections:
     format: "frontmatter"
     fields:
       - { label: "Nome", name: "nome", widget: "string", required: true }
-      - { label: "Incarico", name: "incarico", widget: "string", required: true }
+      - { label: "Incarico", name: "incarico", widget: "string", required: true, hint: "Per esempio Presidente, Dirigente, Allenatore." }
+      - label: "Sezione"
+        name: "sezione"
+        widget: "select"
+        options: ["Società", "Staff tecnico"]
+        default: "Staff tecnico"
+        hint: "Società compare nella pagina Club (presidente, dirigenti...), Staff tecnico nella pagina Squadra (allenatori...)."
       - { label: "Foto", name: "foto", widget: "image", required: false, media_folder: "/img/uploads", public_folder: "/img/uploads" }
       - { label: "Ordine", name: "ordine", widget: "number", value_type: "int", required: false, default: 99 }
+
+  - name: "formazione"
+    label: "Formazione"
+    files:
+      - name: "formazione"
+        label: "Formazione titolare (home)"
+        file: "src/data/formazione.json"
+        description: "La formazione della partita in home, da aggiornare ogni settimana. Scegli il portiere e i giocatori di ogni reparto: il modulo (4-4-2, 4-3-3...) si calcola da solo. La formazione resta sempre in home, anche incompleta (in 10, senza portiere): il campo mostra i giocatori inseriti. La panchina e' facoltativa."
+        fields:
+          - { label: "Titolo", name: "titolo", widget: "string", required: false, hint: "Per esempio: Contro il Sant'Angelo. Se resta vuoto: Formazione titolare." }
+          - label: "Modulo"
+            name: "modulo"
+            widget: "select"
+            required: false
+            default: "auto"
+            options:
+              - { label: "Automatico (si ricava dai reparti)", value: "auto" }
+              - { label: "4-4-2", value: "4-4-2" }
+              - { label: "4-3-3", value: "4-3-3" }
+              - { label: "4-2-3-1", value: "4-2-3-1" }
+              - { label: "4-3-1-2", value: "4-3-1-2" }
+              - { label: "4-5-1", value: "4-5-1" }
+              - { label: "3-5-2", value: "3-5-2" }
+              - { label: "3-4-3", value: "3-4-3" }
+              - { label: "5-3-2", value: "5-3-2" }
+              - { label: "5-4-1", value: "5-4-1" }
+            hint: "Decide la disposizione in campo: i giocatori vengono presi nell'ordine dei reparti qui sotto (difensori, centrocampisti, trequartisti, attaccanti). Per cambiare modulo basta cambiarlo qui."
+          - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+          - label: "Difensori"
+            name: "difensori"
+            widget: "list"
+            required: false
+            hint: "Da sinistra a destra, come li vedi guardando la porta avversaria."
+            field: { label: "Giocatore", name: "giocatore", widget: "relation", collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+          - label: "Centrocampisti"
+            name: "centrocampisti"
+            widget: "list"
+            required: false
+            hint: "Da sinistra a destra."
+            field: { label: "Giocatore", name: "giocatore", widget: "relation", collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+          - label: "Trequartisti"
+            name: "trequartisti"
+            widget: "list"
+            required: false
+            hint: "Solo per moduli come il 4-2-3-1. Altrimenti lascia vuoto."
+            field: { label: "Giocatore", name: "giocatore", widget: "relation", collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+          - label: "Attaccanti"
+            name: "attaccanti"
+            widget: "list"
+            required: false
+            hint: "Da sinistra a destra."
+            field: { label: "Giocatore", name: "giocatore", widget: "relation", collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+          - label: "Panchina"
+            name: "panchina"
+            widget: "list"
+            required: false
+            hint: "Le riserve, compaiono sotto il campo. Chi e' gia' titolare viene ignorato."
+            field: { label: "Giocatore", name: "giocatore", widget: "relation", collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
 
   - name: "sponsor"
     label: "Sponsor"

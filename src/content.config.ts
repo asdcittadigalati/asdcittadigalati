@@ -24,6 +24,8 @@ const staff = defineCollection({
   schema: z.object({
     nome: z.string(),
     incarico: z.string(),
+    // Società -> pagina Club (presidente, dirigenti), Staff tecnico -> pagina Squadra.
+    sezione: empty(z.enum(["Società", "Staff tecnico"]).default("Staff tecnico")),
     foto: empty(z.string().optional()),
     ordine: empty(z.number().int().default(99)),
   }),

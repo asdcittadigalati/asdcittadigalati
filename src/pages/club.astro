@@ -6,6 +6,14 @@ import EmbedConsenso from "../components/EmbedConsenso.astro";
 // pannello: la societa' puo' correggere la propria storia senza sviluppatore.
 import paginaClub from "../data/pagina-club.json";
 import societa from "../data/societa.json";
+import { getCollection } from "astro:content";
+import StaffList from "../components/StaffList.astro";
+
+// Dirigenza dal pannello (Staff e dirigenza, sezione "Società"): prima le
+// cariche per ordine, poi i dirigenti in ordine alfabetico.
+const dirigenza = (await getCollection("staff", (m) => m.data.sezione === "Società")).sort(
+  (a, b) => a.data.ordine - b.data.ordine || a.data.nome.localeCompare(b.data.nome, "it")
+);
 
 // Coordinate del comune di Galati Mamertino (ME), verificate su Nominatim/OpenStreetMap
 // (query "Galati Mamertino" -> lat 38.0315592, lon 14.7725171). Le coordinate esatte del
@@ -37,6 +45,15 @@ const googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=Campo+spo
     </section>
 
     <Timeline tappe={paginaClub.tappe} />
+
+    {dirigenza.length > 0 && (
+      <section class="societa">
+        <div class="inner">
+          <h2 class="font-display">La società</h2>
+          <StaffList persone={dirigenza} />
+        </div>
+      </section>
+    )}
 
     <section class="campo">
       <!-- FOTO FITTIZIA generata: sostituire con una foto vera del Ducezio-Parafioriti -->
@@ -104,6 +121,13 @@ const googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=Campo+spo
     color: var(--oro);
     margin-top: 0.6rem;
     text-align: right;
+  }
+  .societa {
+    padding: clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 2.5rem) clamp(2.5rem, 6vw, 4rem);
+  }
+  .societa h2 {
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    margin: 0 0 1.5rem;
   }
   .campo {
     background: var(--surface);
