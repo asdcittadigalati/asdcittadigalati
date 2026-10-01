@@ -28,7 +28,8 @@
   canvas { display: none; }
   .overlay { position: absolute; inset: auto 0 12vh 0; text-align: center; opacity: 0; transform: translateY(16px); transition: opacity 0.6s var(--ease-out-quart), transform 0.6s var(--ease-out-quart); }
   .overlay.on, .overlay:focus-within { opacity: 1; transform: none; }
-  .overlay h1 { font-size: clamp(3rem, 9vw, 7rem); text-shadow: 0 2px 24px color-mix(in oklch, var(--bg) 80%, transparent); }
+  /* 11vh: su portatili bassi e larghi il titolo non copre mezzo scudo. */
+  .overlay h1 { font-size: clamp(3rem, min(9vw, 11vh), 7rem); text-shadow: 0 2px 24px color-mix(in oklch, var(--bg) 80%, transparent); }
   .cta { display: inline-block; margin-top: 1rem; padding: 0.8rem 2rem; background: var(--giallo); color: var(--bg); font-family: var(--font-display); text-decoration: none; font-size: 1.1rem; }
   @media (prefers-reduced-motion: reduce) { .hero { height: 100vh; } .overlay { opacity: 1; transform: none; } }
 </style>
@@ -72,15 +73,43 @@
 
     const ctx = canvas.getContext("2d")!;
     let target = 1, current = 1, raf = 0;
+    // Altezza dell'header fisso, in pixel del canvas: quella fascia e' coperta.
+    let sottoTestata = 0;
 
-    // Disegna un frame in cover sul canvas, con opacita' data.
-    function paint(img: HTMLImageElement, alpha: number) {
+    // Dove va il frame: in cover sull'area visibile SOTTO l'header, ma mai
+    // cosi' grande da tagliare lo scudo, che occupa circa il 66% dell'altezza
+    // del frame (dal 18% all'82%, misurato sul frame finale). Su schermi bassi
+    // e larghi (portatili da 13") il frame si rimpicciolisce e lascia due
+    // fasce ai lati, sfumate nel fondo della pagina da sfuma().
+    function posa(img: HTMLImageElement) {
       const { width: cw, height: ch } = canvas;
-      const s = Math.max(cw / img.width, ch / img.height);
+      const vh = ch - sottoTestata;
+      const s = Math.min(Math.max(cw / img.width, vh / img.height), (vh * 0.92) / (img.height * 0.66));
       const w = img.width * s, h = img.height * s;
+      return { x: (cw - w) / 2, y: sottoTestata + (vh - h) / 2, w, h };
+    }
+
+    // Disegna un frame nella posizione data, con opacita' data.
+    function paint(img: HTMLImageElement, p: ReturnType<typeof posa>, alpha: number) {
       ctx.globalAlpha = alpha;
-      ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+      ctx.drawImage(img, p.x, p.y, p.w, p.h);
       ctx.globalAlpha = 1;
+    }
+
+    // Bordi laterali del frame resi trasparenti in sfumatura: sotto c'e' il
+    // fondo della pagina, quindi niente stacco netto fra foto e fasce vuote.
+    function sfuma(p: ReturnType<typeof posa>) {
+      if (p.x <= 0) return;
+      const f = p.w * 0.06;
+      ctx.globalCompositeOperation = "destination-out";
+      for (const [da, a] of [[p.x, p.x + f], [p.x + p.w, p.x + p.w - f]]) {
+        const g = ctx.createLinearGradient(da, 0, a, 0);
+        g.addColorStop(0, "rgba(0,0,0,1)");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(Math.min(da, a), 0, f, canvas.height);
+      }
+      ctx.globalCompositeOperation = "source-over";
     }
 
     // Cerca il frame caricato piu' vicino a i, entro una finestra ragionevole:
@@ -103,8 +132,11 @@
       const imgLo = frames[lo] ?? nearestLoaded(lo);
       const imgHi = frames[hi] ?? imgLo;
       if (imgLo) {
-        paint(imgLo, 1);
-        if (imgHi && imgHi !== imgLo && mix > 0.01) paint(imgHi, mix);
+        const p = posa(imgLo);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        paint(imgLo, p, 1);
+        if (imgHi && imgHi !== imgLo && mix > 0.01) paint(imgHi, p, mix);
+        sfuma(p);
       }
       overlay.classList.toggle("on", target >= count - 2);
       if (Math.abs(current - target) > 0.01) raf = requestAnimationFrame(draw);
@@ -120,6 +152,7 @@
     function resize() {
       canvas.width = innerWidth * devicePixelRatio;
       canvas.height = innerHeight * devicePixelRatio;
+      sottoTestata = (document.querySelector<HTMLElement>(".site-header")?.offsetHeight ?? 0) * devicePixelRatio;
       if (!raf) raf = requestAnimationFrame(draw);
     }
 
