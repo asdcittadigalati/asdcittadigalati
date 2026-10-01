@@ -3,17 +3,23 @@
 // NON e' la fila di numeroni con etichetta sotto tipica dei siti aziendali:
 // e' un pannello scuro unico con cifre monospaziate, cornice e spie.
 //
-// I dati veri arriveranno dai widget Tuttocampo a campionato iniziato. Finche'
-// non si gioca, i numeri restano a zero e il pannello lo dichiara: meglio un
-// tabellone spento e onesto che numeri inventati su partite mai giocate.
-interface Props {
-  vinte?: number;
-  pareggiate?: number;
-  perse?: number;
-  golFatti?: number;
-  iniziata?: boolean;
+// I numeri sono quelli del Citta' di Galati nella classifica di Tuttocampo:
+// letti alla pubblicazione del sito e poi a ogni visita da /api/classifica
+// (Worker), cosi' si aggiornano da soli dopo ogni giornata.
+// Finche' la squadra non ha giocato (o Tuttocampo non risponde) il pannello
+// resta spento e lo dichiara: meglio onesto che numeri inventati.
+import { leggiClassifica, type RigaClassifica } from "../lib/classifica";
+import { WIDGET_URLS, TEAM_ID } from "../lib/tuttocampo";
+
+let noi: RigaClassifica | undefined;
+try {
+  const r = await fetch(WIDGET_URLS.classifica!, { signal: AbortSignal.timeout(5000) });
+  if (r.ok) noi = leggiClassifica(await r.text()).find((s) => s.id === TEAM_ID);
+} catch {
+  // Rete assente durante la compilazione: ci pensa l'aggiornamento in pagina.
 }
-const { vinte = 0, pareggiate = 0, perse = 0, golFatti = 0, iniziata = false } = Astro.props;
+const iniziata = (noi?.g ?? 0) > 0;
+const { v: vinte = 0, n: pareggiate = 0, p: perse = 0, gf: golFatti = 0 } = noi ?? {};
 
 const voci = [
   { sigla: "V", label: "Vinte", valore: vinte },
@@ -24,11 +30,11 @@ const voci = [
 ---
 <section class="scoreboard-section" aria-labelledby="score-title">
   <div class="inner">
-    <div class="panel" data-scoreboard>
+    <div class="panel" data-scoreboard data-noi={TEAM_ID}>
       <div class="panel-head">
         <span class="spia" aria-hidden="true"></span>
         <h2 id="score-title" class="font-display">Stagione 2026-27</h2>
-        <span class="stato">{iniziata ? "in corso" : "non iniziata"}</span>
+        <span class="stato" data-stato>{iniziata ? "in corso" : "non iniziata"}</span>
       </div>
 
       <dl class="cifre">
@@ -37,14 +43,14 @@ const voci = [
             <dt>
               <abbr title={v.label}>{v.sigla}</abbr>
             </dt>
-            <dd class="valore font-display" data-valore={v.valore}>{iniziata ? "0" : "-"}</dd>
+            <dd class="valore font-display" data-valore={v.valore}>{iniziata ? v.valore : "-"}</dd>
             <span class="etichetta">{v.label}</span>
           </div>
         ))}
       </dl>
 
       {!iniziata && (
-        <p class="nota">
+        <p class="nota" data-nota>
           Il campionato non è ancora cominciato. I numeri si accendono da soli
           dopo la prima giornata.
         </p>
@@ -145,10 +151,15 @@ const voci = [
 </style>
 
 <script>
+  import type { RigaClassifica } from "../lib/classifica";
+
   // Conteggio da 0 al valore, una volta sola, quando il pannello entra in vista.
   const panel = document.querySelector<HTMLElement>("[data-scoreboard]");
-  if (panel && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (panel) {
     const celle = [...panel.querySelectorAll<HTMLElement>("[data-valore]")];
+    const movimento = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let visto = false;
+
     const conta = (el: HTMLElement) => {
       const target = Number(el.dataset.valore || "0");
       if (!Number.isFinite(target) || target <= 0) return;
@@ -162,14 +173,37 @@ const voci = [
       };
       requestAnimationFrame(step);
     };
+    // I numeri scritti nella pagina ripartono da zero per il conteggio.
+    if (movimento) celle.forEach((el) => el.textContent !== "-" && (el.textContent = "0"));
+
     const io = new IntersectionObserver(
       ([e]) => {
         if (!e.isIntersecting) return;
-        celle.forEach(conta);
+        visto = true;
+        if (movimento) celle.forEach(conta);
         io.disconnect();
       },
       { threshold: 0.4 }
     );
     io.observe(panel);
+
+    // Aggiornamento a ogni visita: i numeri di adesso, non di quando il sito e'
+    // stato pubblicato. Se la richiesta fallisce resta quello che c'e'.
+    fetch("/api/classifica")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((dati: { squadre: RigaClassifica[] } | null) => {
+        const noi = dati?.squadre?.find((s) => s.id === panel.dataset.noi);
+        if (!noi || noi.g <= 0) return;
+        panel.querySelector("[data-stato]")!.textContent = "in corso";
+        panel.querySelector("[data-nota]")?.remove();
+        [noi.v, noi.n, noi.p, noi.gf].forEach((valore, i) => {
+          const el = celle[i];
+          el.dataset.valore = String(valore);
+          // Gia' in vista (o niente animazioni): numero subito. Altrimenti 0,
+          // e il conteggio parte quando il pannello entra in vista.
+          el.textContent = visto || !movimento ? String(valore) : "0";
+        });
+      })
+      .catch(() => {});
   }
 </script>

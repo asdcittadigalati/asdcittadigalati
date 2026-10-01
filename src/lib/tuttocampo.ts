@@ -1,8 +1,8 @@
 export const TEAM_ID = "916584";
-export const TEAM_PAGE = "https://www.tuttocampo.it/Sicilia/PrimaCategoria/GironeD/Squadra/CittaDiGalati/916584/Scheda";
+export const TEAM_PAGE = "https://www.tuttocampo.it/Sicilia/PrimaCategoria/GironeC/Squadra/CittaDiGalati/916584/Scheda";
 
 // Codice del girone rilasciato dal generatore di Tuttocampo (WidgetApi) per
-// Sicilia / Prima Categoria / Girone D. I widget sono gratuiti per i siti
+// Sicilia / Prima Categoria / Girone C. I widget sono gratuiti per i siti
 // delle societa' sportive.
 //
 // IMPORTANTE, e diverso da quanto si potrebbe pensare: questo codice
