@@ -1,7 +1,9 @@
 ---
 // Tutti gli sponsor, gli stessi del nastro che scorre in home (collezione
 // "sponsor" del pannello): prima i main, poi i tecnici, poi i partner, in
-// ordine alfabetico. Chi ha un sito ha la scheda cliccabile.
+// ordine alfabetico. Ogni scheda apre il logo in grande (molti loghi hanno
+// telefono e indirizzo, illeggibili nella griglia) con il link al sito se c'e'.
+// In fondo la foto della squadra.
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 
@@ -22,18 +24,10 @@ const sponsors = (await getCollection("sponsor")).sort(
           <ul class="sponsor-grid">
             {sponsors.map((s) => (
               <li>
-                {s.data.url ? (
-                  <a href={s.data.url} target="_blank" rel="noopener noreferrer" class="scheda">
-                    <span class="logo"><img src={s.data.logo} alt="" loading="lazy" decoding="async" /></span>
-                    <span class="nome">{s.data.nome}</span>
-                    <span class="sito" aria-hidden="true">Visita il sito ↗</span>
-                  </a>
-                ) : (
-                  <div class="scheda">
-                    <span class="logo"><img src={s.data.logo} alt="" loading="lazy" decoding="async" /></span>
-                    <span class="nome">{s.data.nome}</span>
-                  </div>
-                )}
+                <button type="button" class="scheda" data-sponsor data-nome={s.data.nome} data-logo={s.data.logo} data-url={s.data.url ?? ""}>
+                  <span class="logo"><img src={s.data.logo} alt="" loading="lazy" decoding="async" /></span>
+                  <span class="nome">{s.data.nome}</span>
+                </button>
               </li>
             ))}
           </ul>
@@ -42,11 +36,27 @@ const sponsors = (await getCollection("sponsor")).sort(
         )}
       </div>
     </section>
+
+    <section class="squadra" aria-labelledby="squadra-title">
+      <div class="section-inner">
+        <h2 id="squadra-title" class="font-display">Grazie da tutta la squadra</h2>
+        <img src="/img/foto/squadra-2026.webp" alt="La squadra del Città di Galati in posa al campo, in maglia gialla e pantaloncini rossi" width="762" height="670" loading="lazy" decoding="async" />
+      </div>
+    </section>
   </main>
+
+  <dialog class="sponsor-dialog" data-sponsor-dialog aria-labelledby="sd-nome">
+    <button type="button" class="sd-chiudi" data-sd-close aria-label="Chiudi">&times;</button>
+    <div class="sd-logo"><img data-sd-logo src="" alt="" /></div>
+    <div class="sd-testo">
+      <h2 id="sd-nome" class="font-display" data-sd-nome></h2>
+      <a data-sd-sito href="" target="_blank" rel="noopener noreferrer" class="sd-sito" hidden>Visita il sito ↗</a>
+    </div>
+  </dialog>
 </Base>
 <style>
   .sponsor-page {
-    padding: clamp(3rem, 8vw, 6rem) clamp(1rem, 4vw, 2.5rem) clamp(3rem, 8vw, 6rem);
+    padding: clamp(3rem, 8vw, 6rem) clamp(1rem, 4vw, 2.5rem) clamp(2rem, 6vw, 4rem);
   }
   .section-inner {
     max-width: 1200px;
@@ -74,16 +84,19 @@ const sponsors = (await getCollection("sponsor")).sort(
     .sponsor-grid { grid-template-columns: repeat(4, 1fr); }
   }
   .scheda {
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.6rem;
     padding: clamp(1rem, 3vw, 1.5rem) clamp(0.75rem, 2vw, 1.25rem);
+    border: 0;
+    font: inherit;
+    cursor: zoom-in;
     /* stesso fondo chiaro del nastro in home: i loghi sono pensati per quello */
     background: oklch(0.95 0.01 265);
     color: oklch(0.2 0.03 265);
-    text-decoration: none;
     text-align: center;
     transition: transform 0.25s var(--ease-out-quart), box-shadow 0.25s var(--ease-out-quart);
   }
@@ -104,20 +117,119 @@ const sponsors = (await getCollection("sponsor")).sort(
     font-size: clamp(0.85rem, 2.4vw, 1rem);
     line-height: 1.2;
   }
-  .sito {
-    margin-top: auto;
-    font-size: 0.78rem;
-    color: oklch(0.45 0.03 265);
-  }
-  a.scheda:hover,
-  a.scheda:focus-visible {
+  .scheda:hover,
+  .scheda:focus-visible {
     transform: translateY(-4px);
     box-shadow: 0 10px 24px oklch(0 0 0 / 0.35);
   }
-  a.scheda:hover .sito,
-  a.scheda:focus-visible .sito { color: oklch(0.2 0.03 265); text-decoration: underline; }
+
+  .squadra {
+    padding: 0 clamp(1rem, 4vw, 2.5rem) clamp(3rem, 8vw, 6rem);
+  }
+  .squadra { text-align: center; }
+  .squadra h2 {
+    font-size: clamp(1.6rem, 4.5vw, 2.5rem);
+    margin: 0 0 1.25rem;
+  }
+  /* alla sua grandezza al massimo: allargata oltre si sgrana */
+  .squadra img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-inline: auto;
+  }
+
+  /* il reset globale (* { margin: 0 }) toglie il margin: auto che centra il <dialog> */
+  .sponsor-dialog {
+    margin: auto;
+    padding: 0;
+    width: min(760px, 94vw);
+    max-height: 92dvh;
+    overflow: auto;
+    border: 1px solid var(--oro);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .sponsor-dialog::backdrop {
+    background: color-mix(in oklch, oklch(0.12 0.04 265) 78%, transparent);
+  }
+  .sd-chiudi {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 1;
+    width: 2.4rem;
+    height: 2.4rem;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text);
+    background: color-mix(in oklch, var(--bg) 75%, transparent);
+    border: 1px solid color-mix(in oklch, var(--oro) 55%, transparent);
+  }
+  .sd-logo {
+    background: oklch(0.95 0.01 265);
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    display: flex;
+    justify-content: center;
+  }
+  .sd-logo img {
+    max-width: 100%;
+    max-height: 60dvh;
+    object-fit: contain;
+  }
+  .sd-testo {
+    padding: clamp(1rem, 3vw, 1.5rem);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+  }
+  .sd-testo h2 {
+    font-size: clamp(1.3rem, 4vw, 2rem);
+    margin: 0;
+  }
+  .sd-sito {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    background: var(--oro);
+    color: var(--bg);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .sd-sito[hidden] { display: none; }
+
   @media (prefers-reduced-motion: reduce) {
     .scheda { transition: none; }
-    a.scheda:hover, a.scheda:focus-visible { transform: none; }
+    .scheda:hover, .scheda:focus-visible { transform: none; }
   }
 </style>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>("[data-sponsor-dialog]");
+  if (dialog) {
+    const logo = dialog.querySelector<HTMLImageElement>("[data-sd-logo]")!;
+    const nome = dialog.querySelector<HTMLElement>("[data-sd-nome]")!;
+    const sito = dialog.querySelector<HTMLAnchorElement>("[data-sd-sito]")!;
+
+    document.addEventListener("click", (e) => {
+      const t = (e.target as Element)?.closest<HTMLElement>("[data-sponsor]");
+      if (!t) return;
+      const d = t.dataset;
+      logo.src = d.logo ?? "";
+      logo.alt = `Logo ${d.nome}`;
+      nome.textContent = d.nome ?? "";
+      sito.hidden = !d.url;
+      if (d.url) sito.href = d.url;
+      dialog.showModal();
+    });
+
+    dialog.querySelector("[data-sd-close]")?.addEventListener("click", () => dialog.close());
+    // Clic sullo sfondo scuro, fuori dal riquadro: chiude.
+    dialog.addEventListener("click", (e) => {
+      const r = dialog.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close();
+    });
+  }
+</script>
