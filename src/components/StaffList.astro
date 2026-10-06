@@ -47,6 +47,25 @@ const { persone } = Astro.props;
     object-position: top;
     flex-shrink: 0;
     border: 1px solid var(--oro);
+    position: relative;
+    /* ingrandita cresce verso destra: a sinistra c'e' il bordo dello schermo */
+    transform-origin: left center;
+    transition:
+      transform 0.35s var(--ease-out-quart),
+      box-shadow 0.35s var(--ease-out-quart);
+  }
+  /* Col mouse la foto si ingrandisce sopra il resto, come le colonne della
+     rosa. Solo puntatori fini: sul telefono un tocco non deve far saltare nulla. */
+  @media (hover: hover) and (pointer: fine) {
+    .staff-list img:hover {
+      transform: scale(2.6);
+      z-index: 2;
+      border-color: var(--giallo);
+      box-shadow: 0 10px 28px oklch(0 0 0 / 0.55);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .staff-list img { transition: none; }
   }
   .staff-list .nome {
     font-family: var(--font-display);
