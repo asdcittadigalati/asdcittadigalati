@@ -1,0 +1,123 @@
+---
+// Tutti gli sponsor, gli stessi del nastro che scorre in home (collezione
+// "sponsor" del pannello): prima i main, poi i tecnici, poi i partner, in
+// ordine alfabetico. Chi ha un sito ha la scheda cliccabile.
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+
+const livelloOrdine: Record<string, number> = { main: 0, tecnico: 1, partner: 2 };
+const sponsors = (await getCollection("sponsor")).sort(
+  (a, b) =>
+    livelloOrdine[a.data.livello] - livelloOrdine[b.data.livello] ||
+    a.data.nome.localeCompare(b.data.nome, "it")
+);
+---
+<Base title="Sponsor" description="Le attività che sostengono l'ASD Città di Galati">
+  <main id="main" tabindex="-1">
+    <section class="sponsor-page" aria-labelledby="sponsor-title">
+      <div class="section-inner">
+        <h1 id="sponsor-title" class="font-display">Sponsor</h1>
+        <p class="kicker">Le attività che sostengono la squadra. Grazie a tutti.</p>
+        {sponsors.length > 0 ? (
+          <ul class="sponsor-grid">
+            {sponsors.map((s) => (
+              <li>
+                {s.data.url ? (
+                  <a href={s.data.url} target="_blank" rel="noopener noreferrer" class="scheda">
+                    <span class="logo"><img src={s.data.logo} alt="" loading="lazy" decoding="async" /></span>
+                    <span class="nome">{s.data.nome}</span>
+                    <span class="sito" aria-hidden="true">Visita il sito ↗</span>
+                  </a>
+                ) : (
+                  <div class="scheda">
+                    <span class="logo"><img src={s.data.logo} alt="" loading="lazy" decoding="async" /></span>
+                    <span class="nome">{s.data.nome}</span>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="vuoto">Gli sponsor della stagione arrivano a breve.</p>
+        )}
+      </div>
+    </section>
+  </main>
+</Base>
+<style>
+  .sponsor-page {
+    padding: clamp(3rem, 8vw, 6rem) clamp(1rem, 4vw, 2.5rem) clamp(3rem, 8vw, 6rem);
+  }
+  .section-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: clamp(2.25rem, 6vw, 3.5rem);
+    margin: 0 0 0.5rem;
+  }
+  .kicker {
+    color: var(--oro);
+    margin: 0 0 2.5rem;
+  }
+  .sponsor-grid {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+  }
+  @media (min-width: 720px) {
+    .sponsor-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 1080px) {
+    .sponsor-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .scheda {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: clamp(1rem, 3vw, 1.5rem) clamp(0.75rem, 2vw, 1.25rem);
+    /* stesso fondo chiaro del nastro in home: i loghi sono pensati per quello */
+    background: oklch(0.95 0.01 265);
+    color: oklch(0.2 0.03 265);
+    text-decoration: none;
+    text-align: center;
+    transition: transform 0.25s var(--ease-out-quart), box-shadow 0.25s var(--ease-out-quart);
+  }
+  .logo {
+    width: 100%;
+    height: clamp(5.5rem, 14vw, 8rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  .nome {
+    font-weight: 700;
+    font-size: clamp(0.85rem, 2.4vw, 1rem);
+    line-height: 1.2;
+  }
+  .sito {
+    margin-top: auto;
+    font-size: 0.78rem;
+    color: oklch(0.45 0.03 265);
+  }
+  a.scheda:hover,
+  a.scheda:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px oklch(0 0 0 / 0.35);
+  }
+  a.scheda:hover .sito,
+  a.scheda:focus-visible .sito { color: oklch(0.2 0.03 265); text-decoration: underline; }
+  @media (prefers-reduced-motion: reduce) {
+    .scheda { transition: none; }
+    a.scheda:hover, a.scheda:focus-visible { transform: none; }
+  }
+</style>
