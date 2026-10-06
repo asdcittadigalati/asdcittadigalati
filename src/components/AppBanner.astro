@@ -1,0 +1,165 @@
+---
+// Banner "aggiungi alla Home", solo su telefono. Con il manifest
+// (public/manifest.webmanifest) il sito si installa come un'app: icona dello
+// stemma e apertura a tutto schermo.
+// - Android (Chrome, Samsung): il browser offre l'installazione con un tocco
+//   (evento beforeinstallprompt) e il banner mostra "Installa". Finche'
+//   l'evento non arriva, o nei browser che non lo hanno, il banner spiega la
+//   voce di menu.
+// - iPhone: Apple non permette ai siti di installarsi da soli; il banner
+//   spiega i due tocchi (Condividi, poi "Aggiungi alla schermata Home").
+// Non compare: su computer, dentro le app (Instagram, Facebook... da li'
+// l'aggiunta non e' possibile), se il sito e' gia' installato, prima della
+// scelta sui cookie (le due barre si coprirebbero) e per 30 giorni dopo la X.
+// Niente service worker: nessuna copia offline che mostri una versione
+// vecchia dopo gli aggiornamenti dal pannello.
+interface Props {
+  nome: string;
+}
+const { nome } = Astro.props;
+---
+<aside class="app-banner" data-app-banner aria-label="Aggiungi il sito alla schermata Home" hidden>
+  <img src="/icon-192.png" alt="" width="48" height="48" class="ab-icona" />
+  <div class="ab-testo">
+    <p class="ab-titolo">Porta il {nome} nella Home</p>
+    <p class="ab-come" data-ab-ios hidden>
+      Tocca
+      <svg class="ab-condividi" viewBox="0 0 24 24" aria-label="Condividi" role="img"><path d="M12 3v12M12 3l-4 4M12 3l4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      e poi «Aggiungi alla schermata Home».
+    </p>
+    <p class="ab-come" data-ab-menu hidden>Apri il menu ⋮ del browser e scegli «Aggiungi a schermata Home» o «Installa app».</p>
+    <p class="ab-come" data-ab-un-tocco hidden>Un tocco e lo trovi tra le tue app.</p>
+  </div>
+  <button type="button" class="ab-installa" data-ab-installa hidden>Installa</button>
+  <button type="button" class="ab-chiudi" data-ab-chiudi aria-label="Non ora">&times;</button>
+</aside>
+
+<style>
+  .app-banner {
+    --accento: var(--giallo);
+    position: fixed;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    z-index: 46;
+    max-width: 520px;
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.75rem 0.75rem 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid color-mix(in oklch, var(--accento) 60%, transparent);
+    box-shadow: 0 12px 32px oklch(0 0 0 / 0.45);
+    transform: translateY(0);
+    transition: transform 0.4s var(--ease-out-quart), opacity 0.4s var(--ease-out-quart);
+  }
+  .app-banner[hidden] { display: none; }
+  .app-banner.entra { transform: translateY(130%); opacity: 0; }
+  .ab-icona { flex: none; width: 48px; height: 48px; border-radius: 11px; }
+  .ab-testo { flex: 1; min-width: 0; }
+  .ab-titolo { margin: 0; font-weight: 700; font-size: 0.95rem; line-height: 1.2; }
+  .ab-come { margin: 0.2rem 0 0; font-size: 0.8rem; line-height: 1.35; color: color-mix(in oklch, var(--text) 80%, transparent); }
+  .ab-come[hidden] { display: none; }
+  .ab-condividi { width: 1.05em; height: 1.05em; margin-inline: 0.2em; vertical-align: -0.15em; color: var(--accento); }
+  .ab-installa {
+    flex: none;
+    padding: 0.55rem 0.9rem;
+    border: 0;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: var(--accento);
+    color: var(--bg);
+  }
+  .ab-installa[hidden] { display: none; }
+  .ab-chiudi {
+    flex: none;
+    align-self: flex-start;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .app-banner { transition: none; }
+  }
+</style>
+
+<script>
+  import { leggiConsenso } from "../lib/consenso";
+
+  const banner = document.querySelector<HTMLElement>("[data-app-banner]");
+  const CHIAVE = "app-banner"; // "installata" oppure il momento della X
+  const TRENTA_GIORNI = 30 * 24 * 60 * 60 * 1000;
+
+  const leggi = () => { try { return localStorage.getItem(CHIAVE); } catch { return null; } };
+  const scrivi = (v: string) => { try { localStorage.setItem(CHIAVE, v); } catch { /* storage bloccato: pazienza */ } };
+
+  if (banner) {
+    const q = (s: string) => banner.querySelector<HTMLElement>(s)!;
+    const ua = navigator.userAgent;
+    const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    const dentroUnApp = /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|TikTok|musical_ly|Snapchat|; wv\)/i.test(ua);
+    const installata =
+      matchMedia("(display-mode: standalone)").matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    const telefono = matchMedia("(pointer: coarse)").matches && innerWidth < 900;
+    const stato = leggi();
+    const chiusaDaPoco = !!stato && /^\d+$/.test(stato) && Date.now() - Number(stato) < TRENTA_GIORNI;
+
+    // Android: l'installazione con un tocco, se e quando il browser la offre.
+    let richiesta: (Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }) | null = null;
+    addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      richiesta = e as typeof richiesta;
+      testi();
+    });
+
+    const testi = () => {
+      q("[data-ab-ios]").hidden = !ios;
+      q("[data-ab-un-tocco]").hidden = ios || !richiesta;
+      q("[data-ab-menu]").hidden = ios || !!richiesta;
+      q("[data-ab-installa]").hidden = ios || !richiesta;
+    };
+
+    // L'inno di Longi (e qualunque pulsante fisso) si alza sopra il banner.
+    const altezza = (h: number) =>
+      h ? document.documentElement.style.setProperty("--app-banner-h", `${h + 12}px`)
+        : document.documentElement.style.removeProperty("--app-banner-h");
+
+    const mostra = () => {
+      testi();
+      banner.hidden = false;
+      banner.classList.add("entra");
+      requestAnimationFrame(() => requestAnimationFrame(() => banner.classList.remove("entra")));
+      altezza(banner.offsetHeight);
+    };
+    const nascondi = () => {
+      banner.hidden = true;
+      altezza(0);
+    };
+
+    addEventListener("appinstalled", () => { scrivi("installata"); nascondi(); });
+    q("[data-ab-chiudi]").addEventListener("click", () => { scrivi(String(Date.now())); nascondi(); });
+    q("[data-ab-installa]").addEventListener("click", async () => {
+      if (!richiesta) return;
+      await richiesta.prompt();
+      const { outcome } = await richiesta.userChoice;
+      richiesta = null;
+      if (outcome === "accepted") { scrivi("installata"); nascondi(); } else testi();
+    });
+
+    if (telefono && !installata && !dentroUnApp && stato !== "installata" && !chiusaDaPoco) {
+      // Dopo la scelta sui cookie: prima le due barre si coprirebbero.
+      if (leggiConsenso() !== null) setTimeout(mostra, 2500);
+      else document.addEventListener("consenso-cambiato", () => setTimeout(mostra, 1200), { once: true });
+    }
+  }
+</script>

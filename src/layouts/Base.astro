@@ -3,6 +3,7 @@ import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import CookieNotice from "../components/CookieNotice.astro";
+import AppBanner from "../components/AppBanner.astro";
 interface Props { title: string; description?: string }
 const { title, description = "Sito ufficiale ASD Città di Galati" } = Astro.props;
 // Nei risultati di Google il titolo e' la prima cosa che si legge: nome
@@ -22,6 +23,13 @@ const ogImage = new URL("/img/og.jpg", Astro.site ?? Astro.url).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    <!-- installabile come app dalla schermata Home (vedi AppBanner) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#071027" />
+    <meta name="apple-mobile-web-app-title" content="Città di Galati" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="canonical" href={pageUrl} />
     <link rel="sitemap" href="/sitemap-index.xml" />
@@ -46,6 +54,7 @@ const ogImage = new URL("/img/og.jpg", Astro.site ?? Astro.url).href;
     <slot />
     <Footer />
     <CookieNotice />
+    <AppBanner nome="Città di Galati" />
     <script>
       // Ripiego per il reveal dei titoli nei browser senza animation-timeline
       // (Firefox, Safari meno recenti): stessa resa, via IntersectionObserver.
