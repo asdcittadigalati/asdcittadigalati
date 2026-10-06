@@ -16,7 +16,7 @@ const { persone } = Astro.props;
       : `Segnaposto: foto non disponibile per ${membro.data.nome}`;
     return (
       <li>
-        <img src={membro.data.foto || "/img/silhouette.svg"} alt={alt} loading="lazy" />
+        <img src={membro.data.foto || "/img/silhouette.svg"} alt={alt} loading="lazy" tabindex="0" data-staff-foto />
         <div>
           <p class="nome">{membro.data.nome}</p>
           <p class="incarico">{membro.data.incarico}</p>
@@ -50,12 +50,24 @@ const { persone } = Astro.props;
     position: relative;
     /* ingrandita cresce verso destra: a sinistra c'e' il bordo dello schermo */
     transform-origin: left center;
+    cursor: zoom-in;
+    -webkit-tap-highlight-color: transparent;
     transition:
       transform 0.35s var(--ease-out-quart),
       box-shadow 0.35s var(--ease-out-quart);
   }
-  /* Col mouse la foto si ingrandisce sopra il resto, come le colonne della
-     rosa. Solo puntatori fini: sul telefono un tocco non deve far saltare nulla. */
+  /* La foto si ingrandisce sopra il resto, come le colonne della rosa: col
+     mouse al passaggio, sul telefono al tocco (classe "grande", vedi script;
+     si richiude toccando di nuovo o altrove), da tastiera col focus. */
+  .staff-list img.grande,
+  .staff-list img:focus-visible {
+    transform: scale(2.6);
+    z-index: 2;
+    border-color: var(--giallo);
+    box-shadow: 0 10px 28px oklch(0 0 0 / 0.55);
+    outline: none;
+  }
+  .staff-list img.grande { cursor: zoom-out; }
   @media (hover: hover) and (pointer: fine) {
     .staff-list img:hover {
       transform: scale(2.6);
@@ -63,6 +75,10 @@ const { persone } = Astro.props;
       border-color: var(--giallo);
       box-shadow: 0 10px 28px oklch(0 0 0 / 0.55);
     }
+  }
+  /* sul telefono un po' di piu': la foto piccola si vede appena */
+  @media (max-width: 719px) {
+    .staff-list img.grande { transform: scale(3.3); }
   }
   @media (prefers-reduced-motion: reduce) {
     .staff-list img { transition: none; }
@@ -79,3 +95,17 @@ const { persone } = Astro.props;
     margin: 0.2rem 0 0;
   }
 </style>
+
+<script>
+  // Tocco sul telefono: apre la foto toccata e chiude le altre; un tocco su
+  // quella aperta o altrove la richiude. Col mouse basta il passaggio.
+  if (!matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    document.addEventListener("click", (e) => {
+      const foto = (e.target as Element)?.closest<HTMLElement>("[data-staff-foto]");
+      document.querySelectorAll<HTMLElement>("[data-staff-foto].grande").forEach((f) => {
+        if (f !== foto) f.classList.remove("grande");
+      });
+      foto?.classList.toggle("grande");
+    });
+  }
+</script>
