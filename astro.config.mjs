@@ -1,18 +1,17 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  // `site` non e' ancora impostato: il dominio di produzione non e' stato
-  // scelto (vedi docs/HANDOFF.md). Finche' resta assente, og:url/og:image in
-  // src/layouts/Base.astro risolvono contro l'origine corrente, non contro un
-  // dominio inventato. Quando il dominio sara' registrato, aggiungere qui:
-  //   site: "https://IL-DOMINIO-SCELTO",
-  //
-  // Da fare NELLO STESSO momento, perche' tutto dipende da `site`:
-  //   - sitemap:  npm i @astrojs/sitemap  + integrations: [sitemap()]
-  //   - feed RSS: npm i @astrojs/rss      + src/pages/rss.xml.js
-  //   - anteprime social per singolo articolo (og:image con la copertina)
-  // Prima del dominio questi tre punti non sono realizzabili in modo corretto:
-  // genererebbero indirizzi assoluti su "localhost".
+  // Dominio di produzione (06/10/2026): da qui escono canonical, og:url,
+  // og:image e la sitemap. Il pannello (/admin) resta fuori dalla sitemap.
+  site: 'https://asdcittadigalati.it',
+  // Indirizzi senza barra finale, come i canonical (vedi Base.astro).
+  integrations: [
+    sitemap({
+      filter: (page) => !page.includes('/admin'),
+      serialize: (item) => ({ ...item, url: item.url.replace(/([^/])\/$/, '$1') }),
+    }),
+  ],
 });

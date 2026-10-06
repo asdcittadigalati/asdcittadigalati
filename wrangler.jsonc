@@ -5,6 +5,9 @@
   "name": "asdcittadigalati",
   "main": "worker/index.mjs",
   "compatibility_date": "2026-09-30",
+  // Il sito vive solo su asdcittadigalati.it: l'indirizzo workers.dev farebbe
+  // da doppione per Google.
+  "workers_dev": false,
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

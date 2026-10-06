@@ -5,11 +5,14 @@ import Footer from "../components/Footer.astro";
 import CookieNotice from "../components/CookieNotice.astro";
 interface Props { title: string; description?: string }
 const { title, description = "Sito ufficiale ASD Città di Galati" } = Astro.props;
-const fullTitle = `${title} - ASD Città di Galati`;
-// Astro.site non è ancora configurato (dominio non deciso): finché non lo sarà
-// (Task 12, deploy Netlify) queste URL restano assolute solo rispetto all'origine
-// corrente. Nessun dominio è inventato qui.
-const pageUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
+// Nei risultati di Google il titolo e' la prima cosa che si legge: nome
+// completo del club, e in home anche cosa e' e dove gioca.
+const fullTitle = Astro.url.pathname === "/" ? `ASD Città di Galati · ${title}` : `${title} · ASD Città di Galati`;
+// Indirizzi assoluti sul dominio di Astro.site (astro.config.mjs). Il
+// canonical dice a Google che www e senza www sono la stessa pagina: conta
+// solo quella senza www. Senza barra finale, come i link del sito: un
+// canonical che punta a un redirect confonde Google.
+const pageUrl = new URL(Astro.url.pathname.replace(/(.)\/$/, "$1"), Astro.site ?? Astro.url).href;
 const ogImage = new URL("/img/og.jpg", Astro.site ?? Astro.url).href;
 ---
 <!doctype html>
@@ -20,6 +23,8 @@ const ogImage = new URL("/img/og.jpg", Astro.site ?? Astro.url).href;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={pageUrl} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content={pageUrl} />

@@ -1,6 +1,4 @@
-# ANTEPRIMA: il sito gira ancora con contenuti fittizi (rosa, sponsor, news
-# inventati). Fino alla sostituzione con i dati reali della societa' i motori
-# di ricerca sono esclusi, per non far indicizzare dati falsi sotto il nome
-# vero del club. Alla messa online definitiva: sostituire con Allow.
 User-agent: *
-Disallow: /
+Disallow: /admin/
+
+Sitemap: https://asdcittadigalati.it/sitemap-index.xml

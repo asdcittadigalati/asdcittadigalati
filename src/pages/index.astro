@@ -32,7 +32,10 @@ const claimParole = righeClaim.map((riga) =>
   riga.split(/\s+/).filter(Boolean).map((parola) => ({ parola, i: indiceParola++ }))
 );
 ---
-<Base title="Home">
+<Base
+  title="Squadra di calcio di Galati Mamertino (ME)"
+  description="Sito ufficiale dell'ASD Città di Galati, Prima Categoria Sicilia girone C: rosa, ultima formazione, classifica, prossima partita e sponsor."
+>
   <main id="main" tabindex="-1">
     <Hero />
 
@@ -44,13 +47,12 @@ const claimParole = righeClaim.map((riga) =>
 
     {formazione &&<Formazione formazione={formazione} />}
 
-    <!-- FOTO FITTIZIA generata: sostituire con una foto vera di pubblico al Ducezio -->
     <section class="paese" aria-labelledby="paese-claim">
       <img
-        src="/img/foto/tifosi.webp"
-        alt="Tifosi di spalle lungo la recinzione del campo, sotto le torri faro accese all'imbrunire"
-        width="1600"
-        height="894"
+        src="/img/foto/squadra-2026.webp"
+        alt="La squadra in posa al campo, in maglia gialla e pantaloncini rossi, con il portiere in arancione"
+        width="762"
+        height="670"
         loading="lazy"
       />
       <div class="paese-testo">
@@ -96,6 +98,8 @@ const claimParole = righeClaim.map((riga) =>
     width: 100%;
     height: clamp(280px, 46vw, 560px);
     object-fit: cover;
+    /* foto di squadra: nella fascia larga restano visibili i volti di entrambe le file */
+    object-position: 50% 22%;
     display: block;
   }
 
