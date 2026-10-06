@@ -154,8 +154,11 @@ const ruolo = (m: Maglia, portiere: boolean) => m.ruolo ?? (portiere ? "Portiere
     margin: 0;
     padding: 0 6%;
   }
+  /* Spazi uguali per tutti: con la larghezza presa dal nome, un nome lungo
+     ("Rhammady Benkhassi") spingeva di lato la punta centrale. */
   .linea li {
-    flex: 0 1 0;
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
     justify-content: center;
   }
@@ -177,7 +180,9 @@ const ruolo = (m: Maglia, portiere: boolean) => m.ruolo ?? (portiere ? "Portiere
     font-weight: 700;
     font-size: clamp(0.7rem, 3vw, 0.9rem);
     line-height: 1.1;
-    white-space: nowrap;
+    /* il nome che non sta nel suo spazio va a capo, non allarga la linea */
+    text-align: center;
+    text-wrap: balance;
     color: #fff;
     text-shadow: 0 1px 2px oklch(0 0 0 / 0.55), 0 0 6px oklch(0 0 0 / 0.35);
   }
