@@ -1,0 +1,199 @@
+---
+// LA CURVA: tutta la rosa in una fila di colonne, senza scroll laterale.
+// Le colonne sono piu' alte al centro e scendono ai lati come la curva di uno
+// stadio; a riposo ognuna mostra una striscia della foto (la bandiera
+// gialla, rossa e blu delle foto fa da muro) col nome in verticale. Su
+// hover/focus la colonna si allarga, sale a tutta altezza e mostra nome e
+// numero. Il click apre la scheda (attributi data-player letti da
+// PlayerDialog). Stesso gesto del muro di Longi, forma diversa: la' lastre
+// diagonali, qui la curva.
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  players: CollectionEntry<"giocatori">[];
+}
+const { players } = Astro.props;
+
+// Altezza di ogni colonna in percentuale: 100 al centro, 72 agli estremi.
+const meta = (players.length - 1) / 2 || 1;
+const altezza = (i: number) => Math.round(100 - 28 * ((i - meta) / meta) ** 2);
+---
+<section class="curva-sezione" aria-labelledby="curva-title">
+  <h2 id="curva-title" class="font-display">La rosa</h2>
+  <div class="curva">
+    {players.map((g, i) => (
+      <button
+        type="button"
+        class="colonna"
+        style={`--h: ${altezza(i)}%`}
+        data-player
+        data-nome={g.data.nome}
+        data-ruolo={g.data.ruolo}
+        data-numero={g.data.numero ?? ""}
+        data-foto={g.data.foto ?? ""}
+        aria-label={`Apri la scheda di ${g.data.nome}`}
+      >
+        <img src={g.data.foto || "/img/silhouette.svg"} alt="" class="colonna-foto" loading="lazy" decoding="async" />
+        {g.data.numero !== undefined && (
+          <span class="colonna-numero font-display" aria-hidden="true">{g.data.numero}</span>
+        )}
+        <span class="colonna-nome font-display">{g.data.nome}</span>
+      </button>
+    ))}
+  </div>
+</section>
+<style>
+  .curva-sezione {
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2.5rem);
+  }
+  .curva-sezione h2 {
+    max-width: 1200px;
+    margin: 0 auto 1.5rem;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+  }
+  .curva {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: clamp(320px, 52vh, 500px);
+  }
+  .colonna {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: var(--h);
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    overflow: hidden;
+    background: var(--surface);
+    /* filo giallo in cima, come il bordo dei riquadri del sito */
+    border-top: 3px solid var(--giallo);
+    transition:
+      flex-grow 0.5s var(--ease-out-quart),
+      height 0.5s var(--ease-out-quart);
+  }
+  .colonna:hover,
+  .colonna:focus-visible {
+    flex-grow: 4;
+    height: 100%;
+  }
+  .colonna:focus-visible {
+    outline: 2px solid var(--giallo);
+    outline-offset: -2px;
+  }
+  .colonna-foto {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 22%;
+  }
+  /* fondo scuro dal basso: il nome si legge su qualunque foto */
+  .colonna::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, color-mix(in oklch, var(--bg) 92%, transparent) 0%, transparent 45%);
+    pointer-events: none;
+  }
+  .colonna-nome {
+    position: absolute;
+    left: 50%;
+    bottom: 0.8rem;
+    z-index: 1;
+    /* a riposo si legge dal basso verso l'alto */
+    writing-mode: vertical-rl;
+    transform: translateX(-50%) rotate(180deg);
+    max-height: 60%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--text);
+    font-size: clamp(0.8rem, 1.4vw, 1.05rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .colonna:hover .colonna-nome,
+  .colonna:focus-visible .colonna-nome {
+    writing-mode: horizontal-tb;
+    transform: none;
+    left: 1rem;
+    right: 1rem;
+    max-height: none;
+    white-space: normal;
+    text-align: left;
+    font-size: clamp(1.1rem, 2vw, 1.6rem);
+    line-height: 1.05;
+  }
+  .colonna-numero {
+    position: absolute;
+    top: 0.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    color: var(--giallo);
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    line-height: 1;
+    text-shadow: 0 1px 6px oklch(0 0 0 / 0.6);
+    transition: font-size 0.4s var(--ease-out-quart);
+  }
+  .colonna:hover .colonna-numero,
+  .colonna:focus-visible .colonna-numero {
+    left: auto;
+    right: 0.8rem;
+    transform: none;
+    font-size: clamp(2rem, 3.5vw, 3rem);
+  }
+
+  /* Telefono: venti colonne su uno schermo stretto sarebbero fili. La curva
+     diventa una griglia di riquadri con foto, numero e nome; il tocco apre
+     la scheda. */
+  @media (max-width: 719px) {
+    .curva {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      height: auto;
+      gap: 4px;
+    }
+    .colonna,
+    .colonna:hover,
+    .colonna:focus-visible {
+      height: auto;
+      aspect-ratio: 3 / 4;
+      flex-grow: 0;
+    }
+    .colonna-nome,
+    .colonna:hover .colonna-nome,
+    .colonna:focus-visible .colonna-nome {
+      writing-mode: horizontal-tb;
+      transform: none;
+      left: 0.3rem;
+      right: 0.3rem;
+      bottom: 0.3rem;
+      max-height: none;
+      white-space: normal;
+      text-align: center;
+      font-size: 0.68rem;
+      line-height: 1.05;
+    }
+    .colonna-numero,
+    .colonna:hover .colonna-numero,
+    .colonna:focus-visible .colonna-numero {
+      left: auto;
+      right: 0.3rem;
+      top: 0.25rem;
+      transform: none;
+      font-size: 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .colonna,
+    .colonna-numero {
+      transition: none;
+    }
+  }
+</style>

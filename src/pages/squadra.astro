@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import PlayerCard from "../components/PlayerCard.astro";
-import PlayerWall from "../components/PlayerWall.astro";
+import CurvaRosa from "../components/CurvaRosa.astro";
 import PlayerDialog from "../components/PlayerDialog.astro";
 import StaffList from "../components/StaffList.astro";
 
@@ -31,7 +31,7 @@ const staff = (await getCollection("staff", (m) => m.data.sezione === "Staff tec
   (a, b) => a.data.ordine - b.data.ordine || a.data.nome.localeCompare(b.data.nome, "it")
 );
 
-// La parete curva mostra tutta la rosa in ordine di ruolo e numero: e' il
+// La curva (CurvaRosa) mostra tutta la rosa in ordine di ruolo e numero: e' il
 // colpo d'occhio. La griglia raggruppata sotto resta la consultazione vera.
 const rosaOrdinata = [...giocatori].sort(
   (a, b) =>
@@ -48,7 +48,7 @@ const rosaOrdinata = [...giocatori].sort(
       </div>
     </section>
 
-    {rosaOrdinata.length > 0 && <PlayerWall players={rosaOrdinata} />}
+    {rosaOrdinata.length > 0 && <CurvaRosa players={rosaOrdinata} />}
 
     {gruppi.length > 0 ? (
       gruppi.map((gruppo, i) => (
