@@ -19,6 +19,9 @@ backend:
 # GitHub. Deve restare commentato in produzione.
 # local_backend: true
 
+# Tutte le immagini caricate dal pannello finiscono qui. Niente media_folder
+# sui singoli campi: "/img/uploads" li faceva salvare in img/uploads alla radice
+# del progetto, fuori da public/, e sul sito le foto non comparivano.
 media_folder: "public/img/uploads"
 public_folder: "/img/uploads"
 
@@ -66,7 +69,7 @@ collections:
         hint: "Se non lo sai lascialo vuoto: il giocatore compare in fondo alla rosa, in \"Ruolo da definire\"."
         options: ["Portiere", "Difensore", "Centrocampista", "Attaccante"]
       - { label: "Numero", name: "numero", widget: "number", value_type: "int", required: false }
-      - { label: "Foto", name: "foto", widget: "image", required: false, media_folder: "/img/uploads", public_folder: "/img/uploads" }
+      - { label: "Foto", name: "foto", widget: "image", required: false }
 
   - name: "staff"
     label: "Staff e dirigenza"
@@ -84,7 +87,7 @@ collections:
         options: ["Società", "Staff tecnico"]
         default: "Staff tecnico"
         hint: "Società compare nella pagina Club (presidente, dirigenti...), Staff tecnico nella pagina Squadra (allenatori...)."
-      - { label: "Foto", name: "foto", widget: "image", required: false, media_folder: "/img/uploads", public_folder: "/img/uploads" }
+      - { label: "Foto", name: "foto", widget: "image", required: false }
       - { label: "Ordine", name: "ordine", widget: "number", value_type: "int", required: false, default: 99 }
 
   - name: "formazione"
@@ -265,8 +268,6 @@ collections:
         widget: "image"
         required: true
         hint: "Se qui sotto metti il sito dello sponsor, il logo diventa cliccabile."
-        media_folder: "/img/uploads"
-        public_folder: "/img/uploads"
       - label: "Sito web (o pagina Facebook)"
         name: "url"
         widget: "string"

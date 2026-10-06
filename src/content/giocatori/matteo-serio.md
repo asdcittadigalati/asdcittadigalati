@@ -2,5 +2,5 @@
 nome: Matteo Serio
 ruolo: Difensore
 numero: 5
-foto: /img/uploads/Progetto senza titolo - 17.jpeg
+foto: /img/uploads/matteo-serio.webp
 ---
