@@ -50,6 +50,16 @@ const rosaOrdinata = [...giocatori].sort(
 
     {rosaOrdinata.length > 0 && <CurvaRosa players={rosaOrdinata} />}
 
+    {/* Lo staff subito sotto la rosa completa: seconda cosa che si vede. */}
+    {staff.length > 0 && (
+      <section class="staff-section">
+        <div class="inner">
+          <h2 class="font-display">Staff</h2>
+          <StaffList persone={staff} />
+        </div>
+      </section>
+    )}
+
     {gruppi.length > 0 ? (
       gruppi.map((gruppo, i) => (
         <section class="role-section">
@@ -72,14 +82,6 @@ const rosaOrdinata = [...giocatori].sort(
       </section>
     )}
 
-    {staff.length > 0 && (
-      <section class="staff-section">
-        <div class="inner">
-          <h2 class="font-display">Staff</h2>
-          <StaffList persone={staff} />
-        </div>
-      </section>
-    )}
     <PlayerDialog />
   </main>
 </Base>
