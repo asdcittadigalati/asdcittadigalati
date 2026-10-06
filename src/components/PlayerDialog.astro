@@ -20,13 +20,9 @@
       <p class="pd-ruolo" data-pd-ruolo></p>
       <h2 id="pd-nome" class="font-display" data-pd-nome></h2>
       <dl class="pd-dati">
-        <div><dt>Ruolo</dt><dd data-pd-ruolo2></dd></div>
-        <div><dt>Numero</dt><dd data-pd-numero2></dd></div>
+        <div data-pd-riga-ruolo><dt>Ruolo</dt><dd data-pd-ruolo2></dd></div>
+        <div data-pd-riga-numero><dt>Numero</dt><dd data-pd-numero2></dd></div>
       </dl>
-      <p class="pd-nota">
-        Altezza, età e statistiche compariranno qui quando la società fornirà i
-        dati completi.
-      </p>
     </div>
   </div>
 </dialog>
@@ -37,7 +33,12 @@
     background: var(--surface);
     color: var(--text);
     padding: 0;
-    max-width: min(640px, 92vw);
+    /* il reset globale (* { margin: 0 }) toglie il margin: auto che centra il
+       <dialog>: senza, la scheda si apriva piccola in alto a sinistra */
+    margin: auto;
+    max-width: min(960px, 94vw);
+    max-height: 92dvh;
+    overflow: auto;
     width: 100%;
     /* stato di partenza dell'animazione */
     opacity: 0;
@@ -77,6 +78,11 @@
   }
   @media (min-width: 560px) {
     .pd-inner { grid-template-columns: 240px 1fr; }
+  }
+  @media (min-width: 900px) {
+    .pd-inner { grid-template-columns: 420px 1fr; }
+    .pd-testo { align-self: center; }
+    .pd-testo h2 { font-size: 2.8rem; }
   }
 
   .pd-chiudi {
@@ -128,11 +134,8 @@
   }
   .pd-dati dt { color: color-mix(in oklch, var(--text) 70%, transparent); font-size: 0.85rem; }
   .pd-dati dd { margin: 0; font-family: var(--font-display); }
-  .pd-nota {
-    margin: 0;
-    font-size: 0.8rem;
-    color: color-mix(in oklch, var(--text) 62%, transparent);
-  }
+  /* la riga di un dato assente sparisce del tutto (display: flex vincerebbe su hidden) */
+  .pd-dati > div[hidden] { display: none; }
 
   @media (prefers-reduced-motion: reduce) {
     .player-dialog, .player-dialog::backdrop { transition: none; }
@@ -149,13 +152,17 @@
     const nome = q<HTMLElement>("[data-pd-nome]");
     const ruolo = q<HTMLElement>("[data-pd-ruolo]");
     const ruolo2 = q<HTMLElement>("[data-pd-ruolo2]");
+    const rigaRuolo = q<HTMLElement>("[data-pd-riga-ruolo]");
+    const rigaNumero = q<HTMLElement>("[data-pd-riga-numero]");
 
     const apri = (t: HTMLElement) => {
       const d = t.dataset;
       if (nome) nome.textContent = d.nome ?? "";
       if (ruolo) ruolo.textContent = d.ruolo ?? "";
-      if (ruolo2) ruolo2.textContent = d.ruolo ?? "-";
-      if (numero2) numero2.textContent = d.numero || "-";
+      if (ruolo2) ruolo2.textContent = d.ruolo ?? "";
+      if (numero2) numero2.textContent = d.numero ?? "";
+      if (rigaRuolo) rigaRuolo.hidden = !d.ruolo;
+      if (rigaNumero) rigaNumero.hidden = !d.numero;
       if (numero) {
         numero.textContent = d.numero ?? "";
         numero.hidden = !d.numero;
