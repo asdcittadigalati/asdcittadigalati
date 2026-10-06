@@ -2,6 +2,6 @@
 nome: Massimo Bontempo
 incarico: Allenatore
 sezione: Staff tecnico
-foto: /img/uploads/IMG-20261006-WA0101.jpg
+foto: /img/uploads/IMG_20261006_230540.jpg
 ordine: 1
 ---
