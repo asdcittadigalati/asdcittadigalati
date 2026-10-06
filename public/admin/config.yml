@@ -93,51 +93,151 @@ collections:
       - name: "formazione"
         label: "Formazione titolare (home)"
         file: "src/data/formazione.json"
-        description: "La formazione della partita in home, da aggiornare ogni settimana. Scegli il portiere e i giocatori di ogni reparto: il modulo (4-4-2, 4-3-3...) si calcola da solo. La formazione resta sempre in home, anche incompleta (in 10, senza portiere): il campo mostra i giocatori inseriti. La panchina e' facoltativa."
+        description: "La formazione della partita in home, da aggiornare ogni settimana. Scegli il modulo (4-4-2, 4-3-3...) e metti un giocatore in ogni ruolo: sinistra e destra sono quelle della squadra. La formazione resta sempre in home, anche incompleta (in 10, senza portiere): il campo mostra i giocatori inseriti. La panchina e' facoltativa."
         fields:
           - { label: "Titolo", name: "titolo", widget: "string", required: false, hint: "Per esempio: Contro il Sant'Angelo. Se resta vuoto: Formazione titolare." }
-          - label: "Modulo"
-            name: "modulo"
-            widget: "select"
+          - label: "Modulo e titolari"
+            name: "schieramento"
+            widget: "object"
             required: false
-            default: "auto"
-            options:
-              - { label: "Automatico (si ricava dai reparti)", value: "auto" }
-              - { label: "4-4-2", value: "4-4-2" }
-              - { label: "4-3-3", value: "4-3-3" }
-              - { label: "4-2-3-1", value: "4-2-3-1" }
-              - { label: "4-3-1-2", value: "4-3-1-2" }
-              - { label: "4-5-1", value: "4-5-1" }
-              - { label: "3-5-2", value: "3-5-2" }
-              - { label: "3-4-3", value: "3-4-3" }
-              - { label: "5-3-2", value: "5-3-2" }
-              - { label: "5-4-1", value: "5-4-1" }
-            hint: "Decide la disposizione in campo: i giocatori vengono presi nell'ordine dei reparti qui sotto (difensori, centrocampisti, trequartisti, attaccanti). Per cambiare modulo basta cambiarlo qui."
-          - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
-          - label: "Difensori"
-            name: "difensori"
-            widget: "list"
-            required: false
-            hint: "Da sinistra a destra, come li vedi guardando la porta avversaria."
-            field: { label: "Giocatore", name: "giocatore", widget: "relation", collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
-          - label: "Centrocampisti"
-            name: "centrocampisti"
-            widget: "list"
-            required: false
-            hint: "Da sinistra a destra."
-            field: { label: "Giocatore", name: "giocatore", widget: "relation", collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
-          - label: "Trequartisti"
-            name: "trequartisti"
-            widget: "list"
-            required: false
-            hint: "Solo per moduli come il 4-2-3-1. Altrimenti lascia vuoto."
-            field: { label: "Giocatore", name: "giocatore", widget: "relation", collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
-          - label: "Attaccanti"
-            name: "attaccanti"
-            widget: "list"
-            required: false
-            hint: "Da sinistra a destra."
-            field: { label: "Giocatore", name: "giocatore", widget: "relation", collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+            typeKey: "modulo"
+            hint: "Scegli il modulo: compaiono le caselle dei ruoli, dalla difesa all'attacco. In ogni casella scegli il giocatore. Se manca qualcuno lascia vuota la sua casella: il campo mostra chi c'e'. Per cambiare modulo clicca la X accanto al modulo e scegline un altro (le caselle ripartono vuote)."
+            types:
+              - name: "4-4-2"
+                label: "4-4-2"
+                widget: "object"
+                fields:
+                  - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino sinistro", name: "terzino_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale sinistro", name: "centrale_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale destro", name: "centrale_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino destro", name: "terzino_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Esterno sinistro", name: "esterno_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Centrocampista centrale sinistro", name: "centrocampista_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Centrocampista centrale destro", name: "centrocampista_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Esterno destro", name: "esterno_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Attaccante sinistro", name: "attaccante_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Attaccante destro", name: "attaccante_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+              - name: "4-3-3"
+                label: "4-3-3"
+                widget: "object"
+                fields:
+                  - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino sinistro", name: "terzino_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale sinistro", name: "centrale_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale destro", name: "centrale_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino destro", name: "terzino_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mezzala sinistra", name: "mezzala_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Regista (centrocampista centrale)", name: "regista", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mezzala destra", name: "mezzala_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Ala sinistra", name: "ala_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Punta (centravanti)", name: "punta", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Ala destra", name: "ala_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+              - name: "4-2-3-1"
+                label: "4-2-3-1"
+                widget: "object"
+                fields:
+                  - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino sinistro", name: "terzino_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale sinistro", name: "centrale_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale destro", name: "centrale_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino destro", name: "terzino_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mediano sinistro", name: "mediano_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mediano destro", name: "mediano_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Trequartista sinistro", name: "trequartista_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Trequartista centrale", name: "trequartista", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Trequartista destro", name: "trequartista_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Punta (centravanti)", name: "punta", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+              - name: "4-3-1-2"
+                label: "4-3-1-2"
+                widget: "object"
+                fields:
+                  - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino sinistro", name: "terzino_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale sinistro", name: "centrale_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale destro", name: "centrale_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino destro", name: "terzino_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mezzala sinistra", name: "mezzala_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Regista (centrocampista centrale)", name: "regista", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mezzala destra", name: "mezzala_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Trequartista centrale", name: "trequartista", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Attaccante sinistro", name: "attaccante_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Attaccante destro", name: "attaccante_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+              - name: "4-5-1"
+                label: "4-5-1"
+                widget: "object"
+                fields:
+                  - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino sinistro", name: "terzino_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale sinistro", name: "centrale_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale destro", name: "centrale_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino destro", name: "terzino_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Esterno sinistro", name: "esterno_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mezzala sinistra", name: "mezzala_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Regista (centrocampista centrale)", name: "regista", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mezzala destra", name: "mezzala_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Esterno destro", name: "esterno_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Punta (centravanti)", name: "punta", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+              - name: "3-5-2"
+                label: "3-5-2"
+                widget: "object"
+                fields:
+                  - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale sinistro", name: "centrale_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale", name: "centrale", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale destro", name: "centrale_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Esterno sinistro", name: "esterno_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mezzala sinistra", name: "mezzala_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Regista (centrocampista centrale)", name: "regista", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mezzala destra", name: "mezzala_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Esterno destro", name: "esterno_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Attaccante sinistro", name: "attaccante_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Attaccante destro", name: "attaccante_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+              - name: "3-4-3"
+                label: "3-4-3"
+                widget: "object"
+                fields:
+                  - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale sinistro", name: "centrale_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale", name: "centrale", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale destro", name: "centrale_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Esterno sinistro", name: "esterno_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Centrocampista centrale sinistro", name: "centrocampista_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Centrocampista centrale destro", name: "centrocampista_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Esterno destro", name: "esterno_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Ala sinistra", name: "ala_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Punta (centravanti)", name: "punta", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Ala destra", name: "ala_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+              - name: "5-3-2"
+                label: "5-3-2"
+                widget: "object"
+                fields:
+                  - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino sinistro", name: "terzino_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale sinistro", name: "centrale_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale", name: "centrale", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale destro", name: "centrale_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino destro", name: "terzino_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mezzala sinistra", name: "mezzala_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Regista (centrocampista centrale)", name: "regista", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Mezzala destra", name: "mezzala_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Attaccante sinistro", name: "attaccante_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Attaccante destro", name: "attaccante_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+              - name: "5-4-1"
+                label: "5-4-1"
+                widget: "object"
+                fields:
+                  - { label: "Portiere", name: "portiere", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino sinistro", name: "terzino_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale sinistro", name: "centrale_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale", name: "centrale", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Difensore centrale destro", name: "centrale_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Terzino destro", name: "terzino_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Esterno sinistro", name: "esterno_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Centrocampista centrale sinistro", name: "centrocampista_sx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Centrocampista centrale destro", name: "centrocampista_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Esterno destro", name: "esterno_dx", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
+                  - { label: "Punta (centravanti)", name: "punta", widget: "relation", required: false, collection: "giocatori", value_field: "nome", search_fields: ["nome"], display_fields: ["nome"] }
           - label: "Panchina"
             name: "panchina"
             widget: "list"
