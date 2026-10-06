@@ -156,7 +156,8 @@ collections:
       - label: "Livello"
         name: "livello"
         widget: "select"
-        required: true
+        required: false
+        default: "partner"
         options: ["main", "tecnico", "partner"]
       - label: "Logo"
         name: "logo"
@@ -169,8 +170,9 @@ collections:
         name: "url"
         widget: "string"
         required: false
-        hint: "Chi clicca il logo finisce qui, in una scheda nuova. Incolla l'indirizzo completo, da https:// in poi. Lascia vuoto se lo sponsor non ha un sito: il logo resta mostrato, semplicemente non si clicca."
-        pattern: ["^https?://\\S+$", "Deve iniziare con https:// (esempio: https://www.esempio.it)"]
+        hint: "Facoltativo. Chi clicca il logo finisce qui, in una scheda nuova (esempio: https://www.esempio.it). Lascia vuoto se lo sponsor non ha un sito: il logo resta mostrato, semplicemente non si clicca."
+        # Niente "pattern": Sveltia lo controlla anche a campo vuoto e blocca il
+        # salvataggio degli sponsor senza link. Lo schema aggiunge https:// se manca.
 
   # ------------------------------------------------------------------
   # Testi delle pagine: prima erano scritti nel codice e per cambiarli

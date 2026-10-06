@@ -34,9 +34,11 @@ const sponsor = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/sponsor" }),
   schema: z.object({
     nome: z.string(),
-    livello: z.enum(["main", "tecnico", "partner"]),
+    livello: empty(z.enum(["main", "tecnico", "partner"]).default("partner")),
     logo: z.string(),
-    url: empty(z.string().url().optional()),
+    // Il pannello non controlla piu' il formato (vedi config.yml): "www.sito.it"
+    // diventa "https://www.sito.it" invece di far fallire la build.
+    url: empty(z.string().optional()).transform((u) => u && (/^https?:\/\//i.test(u) ? u : `https://${u}`)),
   }),
 });
 // Post dei social incollati come link dal pannello (vedi src/lib/social.ts).
