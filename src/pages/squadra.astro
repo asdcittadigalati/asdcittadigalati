@@ -15,13 +15,17 @@ const ROLE_LABELS: Record<(typeof ROLE_ORDER)[number], string> = {
 };
 
 const giocatori = await getCollection("giocatori");
-const gruppi = ROLE_ORDER.map((ruolo) => ({
-  ruolo,
-  label: ROLE_LABELS[ruolo],
-  giocatori: giocatori
-    .filter((g) => g.data.ruolo === ruolo)
-    .sort((a, b) => (a.data.numero ?? 999) - (b.data.numero ?? 999)),
-})).filter((g) => g.giocatori.length > 0);
+// Il ruolo e' facoltativo: chi non ce l'ha finisce in fondo, in "Ruolo da definire".
+const ordineRuolo = (ruolo?: string) => {
+  const i = ROLE_ORDER.indexOf(ruolo as (typeof ROLE_ORDER)[number]);
+  return i < 0 ? ROLE_ORDER.length : i;
+};
+const gruppi = [
+  ...ROLE_ORDER.map((ruolo) => ({ label: ROLE_LABELS[ruolo], giocatori: giocatori.filter((g) => g.data.ruolo === ruolo) })),
+  { label: "Ruolo da definire", giocatori: giocatori.filter((g) => !g.data.ruolo) },
+]
+  .map((g) => ({ ...g, giocatori: g.giocatori.sort((a, b) => (a.data.numero ?? 999) - (b.data.numero ?? 999)) }))
+  .filter((g) => g.giocatori.length > 0);
 
 const staff = (await getCollection("staff", (m) => m.data.sezione === "Staff tecnico")).sort(
   (a, b) => a.data.ordine - b.data.ordine || a.data.nome.localeCompare(b.data.nome, "it")
@@ -31,7 +35,7 @@ const staff = (await getCollection("staff", (m) => m.data.sezione === "Staff tec
 // colpo d'occhio. La griglia raggruppata sotto resta la consultazione vera.
 const rosaOrdinata = [...giocatori].sort(
   (a, b) =>
-    ROLE_ORDER.indexOf(a.data.ruolo) - ROLE_ORDER.indexOf(b.data.ruolo) ||
+    ordineRuolo(a.data.ruolo) - ordineRuolo(b.data.ruolo) ||
     (a.data.numero ?? 999) - (b.data.numero ?? 999)
 );
 ---

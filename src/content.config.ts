@@ -14,7 +14,8 @@ const giocatori = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/giocatori" }),
   schema: z.object({
     nome: z.string(),
-    ruolo: z.enum(["Portiere", "Difensore", "Centrocampista", "Attaccante"]),
+    // Facoltativo: chi non ce l'ha compare in fondo alla rosa, in "Ruolo da definire".
+    ruolo: empty(z.enum(["Portiere", "Difensore", "Centrocampista", "Attaccante"]).optional()),
     numero: empty(z.number().int().optional()),
     foto: empty(z.string().optional()),
   }),

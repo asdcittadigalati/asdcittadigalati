@@ -29,7 +29,7 @@ const alt = hasFoto ? `Foto di ${nome}` : `Segnaposto: foto non disponibile per 
   </div>
   <div class="info">
     <p class="nome">{nome}</p>
-    <p class="ruolo">{ruolo}</p>
+    <p class="ruolo">{ruolo ?? "Ruolo da definire"}</p>
   </div>
 </button>
 <style>

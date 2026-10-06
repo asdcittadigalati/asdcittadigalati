@@ -36,7 +36,7 @@ const { players } = Astro.props;
         <div class="card-info">
           {g.data.numero != null && <span class="num font-display" aria-hidden="true">{g.data.numero}</span>}
           <p class="nome font-display">{g.data.nome}</p>
-          <p class="ruolo">{g.data.ruolo}{g.data.numero != null && <span class="sr-only"> numero {g.data.numero}</span>}</p>
+          <p class="ruolo">{g.data.ruolo ?? "Ruolo da definire"}{g.data.numero != null && <span class="sr-only"> numero {g.data.numero}</span>}</p>
         </div>
         </button>
       </li>

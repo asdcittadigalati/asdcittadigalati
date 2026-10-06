@@ -62,7 +62,8 @@ collections:
       - label: "Ruolo"
         name: "ruolo"
         widget: "select"
-        required: true
+        required: false
+        hint: "Se non lo sai lascialo vuoto: il giocatore compare in fondo alla rosa, in \"Ruolo da definire\"."
         options: ["Portiere", "Difensore", "Centrocampista", "Attaccante"]
       - { label: "Numero", name: "numero", widget: "number", value_type: "int", required: false }
       - { label: "Foto", name: "foto", widget: "image", required: false, media_folder: "/img/uploads", public_folder: "/img/uploads" }

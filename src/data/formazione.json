@@ -1,28 +1,33 @@
 {
-  "titolo": "Formazione tipo",
+  "titolo": "Ultima formazione",
   "modulo": "4-3-3",
-  "portiere": "Salvatore Lanza",
+  "portiere": "Andrea Bontempo",
   "difensori": [
-    "Giuseppe Miraglia",
-    "Antonino Scaffidi",
-    "Marco Serranò",
-    "Francesco Alibrandi"
+    "Samuele Vilardo",
+    "Giuseppe Truglio",
+    "Matteo Serio",
+    "Marco Virgilio"
   ],
   "centrocampisti": [
-    "Paolo Ridolfo",
-    "Andrea Frisenda",
-    "Gaetano Amata"
+    "Fernando Venuto",
+    "Basilio Campisi",
+    "Eric Campisi"
   ],
   "trequartisti": [],
   "attaccanti": [
-    "Matteo Franchina",
-    "Nino Calamunci",
-    "Carmelo Spanò"
+    "Davide Vicario",
+    "Michele Orlando",
+    "Younes Rhammady Benkhassi"
   ],
   "panchina": [
-    "Cristian Vadalà",
-    "Emanuele Lo Presti",
-    "Simone Caputo",
-    "Luca Todaro"
+    "Emanuele Serio",
+    "Tommaso Truglio",
+    "Bautista Ferreyra Waimann",
+    "Ali El Idrissi",
+    "Vincenzo Vicari",
+    "Isidoro Truglio",
+    "Giorgio Vicario",
+    "Igor Conti Canalaro",
+    "Massimiliano Bontempo"
   ]
 }
