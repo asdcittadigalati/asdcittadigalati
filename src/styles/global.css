@@ -12,6 +12,11 @@ body {
   font-family: var(--font-body);
   line-height: 1.6;
 }
+/* Niente scorrimento orizzontale su telefono: i riquadri della prossima
+   partita entrano traslati di 3.5rem e finche' non arrivano in vista
+   sporgevano oltre il bordo (+43px, iPhone e Android). `clip` e non `hidden`:
+   non crea uno scroll container, quindi hero ed effetti allo scroll restano. */
+main { overflow-x: clip; }
 h1, h2, h3 { font-family: var(--font-display); text-transform: uppercase; line-height: 1.05; }
 .font-display { font-family: var(--font-display); }
 .font-body { font-family: var(--font-body); }
