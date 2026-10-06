@@ -1,28 +1,28 @@
 {
   "titolo": "Ultima formazione",
   "schieramento": {
-    "modulo": "4-4-2",
+    "modulo": "4-2-3-1",
     "portiere": "Andrea Bontempo",
     "terzino_sx": "Tommaso Truglio",
     "centrale_sx": "Giuseppe Truglio",
     "centrale_dx": "Bautista Ferreyra Waimann",
     "terzino_dx": "Igor Conti Canalaro",
-    "esterno_sx": "Fernando Venuto",
-    "centrocampista_sx": "Eric Campisi",
-    "centrocampista_dx": "Giorgio Vicario",
-    "esterno_dx": "Davide Vicario",
-    "attaccante_sx": "Michele Orlando",
-    "attaccante_dx": "Younes Rhammady Benkhassi"
+    "punta": "Michele Orlando",
+    "mediano_sx": "Fernando Venuto",
+    "mediano_dx": "",
+    "trequartista_sx": "Davide Vicario",
+    "trequartista": "Eric Campisi",
+    "trequartista_dx": "Younes Rhammady Benkhassi"
   },
   "panchina": [
     "Emanuele Serio",
-    "Tommaso Truglio",
-    "Bautista Ferreyra Waimann",
     "Ali El Idrissi",
+    "Basilio Campisi",
+    "Giuseppe Isidoro Truglio",
     "Vincenzo Vicari",
-    "Isidoro Truglio",
-    "Giorgio Vicario",
-    "Igor Conti Canalaro",
+    "Samuele Vilardo",
+    "Matteo Serio",
+    "Marco Virgilio",
     "Massimiliano Bontempo"
   ]
 }
