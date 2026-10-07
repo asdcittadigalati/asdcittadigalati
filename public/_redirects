@@ -3,3 +3,5 @@
 # Stesso formato per Netlify e Cloudflare Pages.
 /news    /social  301
 /news/*  /social  301
+# La pagina Sponsor si chiama Ringraziamenti (07/10/2026).
+/sponsor  /ringraziamenti  301

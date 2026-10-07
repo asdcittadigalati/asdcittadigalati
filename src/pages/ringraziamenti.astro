@@ -14,11 +14,11 @@ const sponsors = (await getCollection("sponsor")).sort(
     a.data.nome.localeCompare(b.data.nome, "it")
 );
 ---
-<Base title="Sponsor" description="Le attività che sostengono l'ASD Città di Galati">
+<Base title="Ringraziamenti" description="Le attività che sostengono l'ASD Città di Galati: grazie a tutti">
   <main id="main" tabindex="-1">
     <section class="sponsor-page" aria-labelledby="sponsor-title">
       <div class="section-inner">
-        <h1 id="sponsor-title" class="font-display">Sponsor</h1>
+        <h1 id="sponsor-title" class="font-display">Ringraziamenti</h1>
         <p class="kicker">Le attività che sostengono la squadra. Grazie a tutti.</p>
         {sponsors.length > 0 ? (
           <ul class="sponsor-grid">
@@ -32,7 +32,7 @@ const sponsors = (await getCollection("sponsor")).sort(
             ))}
           </ul>
         ) : (
-          <p class="vuoto">Gli sponsor della stagione arrivano a breve.</p>
+          <p class="vuoto">In aggiornamento.</p>
         )}
       </div>
     </section>

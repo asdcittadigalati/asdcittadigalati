@@ -9,11 +9,11 @@ const sponsors = (await getCollection("sponsor")).sort(
 {sponsors.length > 0 && (
   <section class="sponsor-strip" aria-labelledby="sponsor-title">
     <div class="inner">
-      <h2 id="sponsor-title" class="font-display">I nostri sponsor</h2>
+      <h2 id="sponsor-title" class="font-display">Ringraziamenti</h2>
     </div>
     {/* Nastro scorrevole: la lista è duplicata (copia aria-hidden) per chiudere
         il giro senza vuoti. Si ferma su hover/focus e con reduced-motion. */}
-    <div class="marquee" role="region" aria-label="Loghi degli sponsor">
+    <div class="marquee" role="region" aria-label="Loghi delle attività che ringraziamo">
       <div class="blur-edge left" aria-hidden="true"></div>
       <div class="blur-edge right" aria-hidden="true"></div>
       <div class="marquee-track">
