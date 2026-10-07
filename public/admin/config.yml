@@ -340,8 +340,8 @@ collections:
             name: "inizio"
             widget: "datetime"
             hint: "Il conto alla rovescia parte da solo. All'ora indicata il riquadro passa alla diretta."
-          - label: "Link della diretta Facebook"
+          - label: "Link della diretta YouTube"
             name: "urlVideo"
             widget: "string"
             required: false
-            hint: "Si incolla quando la diretta e' partita. Senza link, il riquadro invita a seguire la partita sulla pagina Facebook."
+            hint: "Su YouTube apri la diretta, tocca Condividi e Copia link, poi incollalo qui (va bene anche quando la diretta e' solo programmata). Senza link, il riquadro dice che la diretta parte sul canale YouTube. Funziona anche un link di Facebook."

@@ -1,6 +1,7 @@
 ---
 // Riquadro della diretta: conto alla rovescia prima del fischio d'inizio,
-// video di Facebook durante la partita.
+// video della diretta durante la partita: YouTube (il canale della societa')
+// o, se il link e' di Facebook, il riproduttore di Facebook.
 //
 // Perche' il passaggio fra i due stati avviene nel browser e non al momento
 // della compilazione: il sito e' statico, quindi se il conto alla rovescia
@@ -13,11 +14,42 @@ import EmbedConsenso from "./EmbedConsenso.astro";
 const attiva = Boolean(diretta.attiva && diretta.inizio);
 const urlVideo = diretta.urlVideo?.trim() ?? "";
 
-// Indirizzo del riproduttore di Facebook: accetta il link del video cosi'
-// com'e', purche' sia pubblico.
-const srcVideo = urlVideo
-  ? `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(urlVideo)}&show_text=false&width=800`
-  : "";
+// Il riproduttore giusto si sceglie dal link incollato nel pannello.
+// YouTube: watch?v=, youtu.be/, /live/, /shorts/, /embed/ e il link "live"
+// del canale (/channel/UC.../live); in modalita' privacy avanzata
+// (youtube-nocookie). Il link /@nome/live non si puo' incorporare (serve
+// l'ID del canale): resta il pulsante per aprirlo su YouTube.
+function riproduttore(link: string) {
+  let u: URL;
+  try { u = new URL(link); } catch { return null; }
+  const host = u.hostname.replace(/^(www\.|m\.)/, "");
+  const yt = (id: string) => ({
+    src: `https://www.youtube-nocookie.com/embed/${id}`,
+    servizio: "YouTube",
+    altezza: "min(506px, 56.25vw)",
+    nota: "La diretta è trasmessa da YouTube: per vederla qui il browser deve collegarsi ai server di Google, che possono impostare cookie propri.",
+  });
+  if (host === "youtu.be") return yt(u.pathname.slice(1).split("/")[0]);
+  if (host.endsWith("youtube.com")) {
+    const v = u.searchParams.get("v");
+    if (v) return yt(v);
+    const m = u.pathname.match(/^\/(?:live|shorts|embed)\/([\w-]{6,})/);
+    if (m) return yt(m[1]);
+    const canale = u.pathname.match(/^\/channel\/(UC[\w-]+)\/live/);
+    if (canale) return { ...yt(""), src: `https://www.youtube.com/embed/live_stream?channel=${canale[1]}` };
+    return null;
+  }
+  if (host.endsWith("facebook.com") || host === "fb.watch") {
+    return {
+      src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(link)}&show_text=false&width=800`,
+      servizio: "Facebook",
+      altezza: "460px",
+      nota: "La diretta è trasmessa da Facebook: per vederla qui il browser deve collegarsi ai loro server, che possono impostare cookie propri.",
+    };
+  }
+  return null;
+}
+const video = urlVideo ? riproduttore(urlVideo) : null;
 ---
 {attiva && (
   <section class="diretta" data-diretta data-inizio={diretta.inizio} aria-labelledby="diretta-title">
@@ -41,17 +73,22 @@ const srcVideo = urlVideo
 
       {/* Dal fischio d'inizio in poi */}
       <div class="live" data-live hidden>
-        {srcVideo ? (
+        {video ? (
           <EmbedConsenso
-            src={srcVideo}
+            src={video.src}
             title={`Diretta: ${diretta.titolo || "partita"}`}
-            servizio="Facebook"
-            altezza="460px"
-            nota="La diretta è trasmessa da Facebook: per vederla qui il browser deve collegarsi ai loro server, che possono impostare cookie propri."
+            servizio={video.servizio}
+            altezza={video.altezza}
+            nota={video.nota}
+            apri={urlVideo}
           />
+        ) : urlVideo ? (
+          <p class="senza-video">
+            <a href={urlVideo} target="_blank" rel="noopener noreferrer">Guarda la diretta su YouTube ↗</a>
+          </p>
         ) : (
           <p class="senza-video">
-            La diretta è in partenza sulla pagina Facebook della società.
+            La diretta è in partenza sul canale YouTube della società.
           </p>
         )}
       </div>
