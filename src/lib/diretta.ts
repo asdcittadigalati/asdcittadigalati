@@ -59,6 +59,15 @@ export function normalizzaLink(link: string): string {
   return /^[a-z][a-z0-9+.-]*:\/\//i.test(s) ? s : `https://${s.replace(/^\/+/, "")}`;
 }
 
+// Il riquadro va in pagina? Con l'ora del fischio: fino a 7 giorni dopo.
+// Senza ora (facoltativa: c'e' chi lancia la diretta a partita iniziata):
+// solo se c'e' un link, e resta finche' non si spegne l'interruttore.
+export function mostraRiquadro(attiva: boolean, inizio: Date, link: string, ora: Date): boolean {
+  if (!attiva) return false;
+  if (Number.isNaN(inizio.getTime())) return Boolean(link.trim());
+  return fase(inizio, ora) !== "scaduta";
+}
+
 export interface Riproduttore {
   src: string;
   servizio: "YouTube" | "Twitch" | "Facebook";

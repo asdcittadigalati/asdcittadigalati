@@ -324,13 +324,13 @@ collections:
       - name: "diretta"
         label: "Diretta della partita"
         file: "src/data/diretta.json"
-        description: "Il riquadro in home: conto alla rovescia prima della partita, la diretta per 3 ore dal fischio d'inizio, poi \"Rivedi la partita\" col video. Sparisce da solo 7 giorni dopo il fischio d'inizio."
+        description: "Il riquadro della partita in home. Con l'ora del fischio: conto alla rovescia, diretta per 3 ore, poi \"Rivedi la partita\" col video, e sparisce da solo 7 giorni dopo. Senza ora: il video compare subito come \"Guarda la partita\" e resta finche' non spegni l'interruttore."
         fields:
           - label: "Diretta e replica visibili in home"
             name: "attiva"
             widget: "boolean"
             default: false
-            hint: "Acceso: conto alla rovescia, diretta e poi replica in home. SPENTO e salvato: il video sparisce dal sito in 4-5 minuti, quando vuoi (anche a partita appena finita). Se lo lasci acceso sparisce comunque da solo 7 giorni dopo il fischio d'inizio."
+            hint: "Acceso: il riquadro e' in home. SPENTO e salvato: il video sparisce dal sito in 4-5 minuti, quando vuoi (anche a partita appena finita). Con l'ora del fischio sparisce comunque da solo 7 giorni dopo; senza ora resta finche' non lo spegni."
           - label: "Titolo"
             name: "titolo"
             widget: "string"
@@ -341,9 +341,10 @@ collections:
             widget: "datetime"
             # salvata con il fuso ("...T15:30:00+02:00"): letta giusta anche all'estero
             format: "YYYY-MM-DDTHH:mm:ssZ"
-            hint: "Il conto alla rovescia parte da solo. All'ora indicata il riquadro passa alla diretta (per 3 ore), poi alla replica per una settimana."
+            required: false
+            hint: "Facoltativa. Se la metti: conto alla rovescia in home, all'ora indicata la diretta (per 3 ore), poi la replica, e dopo 7 giorni sparisce da sola. Se la lasci vuota: niente conto alla rovescia, il video compare appena salvi (4-5 minuti) con la scritta \"Guarda la partita\" e resta finche' non spegni l'interruttore qui sopra."
           - label: "Link della diretta (YouTube, Twitch o Facebook)"
             name: "urlVideo"
             widget: "string"
             required: false
-            hint: "YouTube: apri la diretta, Condividi, Copia link (resta valido anche come replica). Twitch: PRIMA della prima diretta, dal sito twitch.tv (non dall'app), attiva Impostazioni > Streaming > Archivia le trasmissioni passate, altrimenti la partita non viene salvata. Poi incolla il link del canale, per esempio https://www.twitch.tv/nomecanale; a partita finita, per rivederla qui, sostituiscilo con il link del video salvato (twitch.tv/videos/...), altrimenti il riquadro rimanda ai video del canale. Funziona anche un link di Facebook."
+            hint: "YouTube: apri la diretta, Condividi, Copia link (resta valido anche come replica). Twitch: PRIMA della prima diretta, dal sito twitch.tv (non dall'app), attiva Impostazioni > Streaming > Archivia le trasmissioni passate, altrimenti la partita non viene salvata. Poi incolla il link del canale, per esempio https://www.twitch.tv/nomecanale; a partita finita, per rivederla qui, sostituiscilo con il link del video salvato (twitch.tv/videos/...), altrimenti sotto il riquadro c'e' il collegamento ai video del canale. Funziona anche un link di Facebook."

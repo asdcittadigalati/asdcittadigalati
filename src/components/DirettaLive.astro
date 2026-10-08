@@ -14,41 +14,47 @@
 // solo all'ora giusta. In compilazione si salta solo una diretta gia' scaduta.
 import diretta from "../data/diretta.json";
 import EmbedConsenso from "./EmbedConsenso.astro";
-import { fase, riproduttore, inizioDa, normalizzaLink } from "../lib/diretta";
+import { mostraRiquadro, riproduttore, inizioDa, normalizzaLink } from "../lib/diretta";
 
 const urlVideo = normalizzaLink(diretta.urlVideo ?? "");
 // Ora assoluta (ISO con fuso): il browser di chiunque, anche all'estero, la
-// legge giusta. Una data non valida passa com'e' e il riquadro si nasconde.
+// legge giusta. Senza ora (facoltativa) niente conto alla rovescia ne' fasi:
+// il video e' subito visibile come "Guarda la partita" finche' l'interruttore
+// resta acceso.
 const inizio = inizioDa(diretta.inizio ?? "");
-const inizioValido = !Number.isNaN(inizio.getTime());
-const attiva = Boolean(diretta.attiva && diretta.inizio) && fase(inizio, new Date()) !== "scaduta";
+const senzaOra = Number.isNaN(inizio.getTime());
+const attiva = mostraRiquadro(Boolean(diretta.attiva), inizio, urlVideo, new Date());
 
 // Twitch vuole nel riproduttore tutti i domini da cui il sito si apre.
 const dominio = Astro.site?.hostname ?? "localhost";
 const video = urlVideo ? riproduttore(urlVideo, [dominio, `www.${dominio}`, "localhost"]) : null;
 ---
 {attiva && (
-  <section class="diretta" data-diretta data-inizio={inizioValido ? inizio.toISOString() : diretta.inizio} aria-labelledby="diretta-title">
+  <section class="diretta" data-diretta data-inizio={senzaOra ? undefined : inizio.toISOString()} data-senza-ora={senzaOra ? "" : undefined} aria-labelledby="diretta-title">
     <div class="inner">
       <p class="etichetta font-display" data-etichetta>
         <span class="pallino" aria-hidden="true"></span>
-        <span data-etichetta-testo>Prossima diretta</span>
+        <span data-etichetta-testo>{senzaOra ? "Guarda la partita" : "Prossima diretta"}</span>
       </p>
 
       <h2 id="diretta-title" class="font-display">
         {diretta.titolo || "Diretta dal campo"}
       </h2>
 
-      {/* Prima del fischio d'inizio */}
-      <div class="attesa" data-attesa>
-        <p class="conto font-display" data-conto aria-live="off">
-          <span class="sr-only">Mancano </span>
-        </p>
-      </div>
-      <p class="quando" data-quando></p>
+      {/* Prima del fischio d'inizio (solo se l'ora c'e') */}
+      {!senzaOra && (
+        <>
+          <div class="attesa" data-attesa>
+            <p class="conto font-display" data-conto aria-live="off">
+              <span class="sr-only">Mancano </span>
+            </p>
+          </div>
+          <p class="quando" data-quando></p>
+        </>
+      )}
 
-      {/* Dal fischio d'inizio in poi (diretta, poi replica) */}
-      <div class="live" data-live hidden>
+      {/* Dal fischio d'inizio in poi (diretta, poi replica); senza ora: subito */}
+      <div class="live" data-live hidden={!senzaOra}>
         {video ? (
           <div data-video>
             <EmbedConsenso
@@ -70,9 +76,12 @@ const video = urlVideo ? riproduttore(urlVideo, [dominio, `www.${dominio}`, "loc
             La diretta è in partenza sui canali della società.
           </p>
         )}
+        {/* Canale Twitch: a diretta finita il riproduttore direbbe "offline".
+            Con l'ora lo script lo sostituisce con questo collegamento; senza ora
+            (nessuna fase) il collegamento sta sempre sotto il video. */}
         {video?.replicaTwitch && (
-          <p class="senza-video" data-replica-twitch hidden>
-            La diretta è finita.{" "}
+          <p class="senza-video" data-replica-twitch hidden={!senzaOra}>
+            {senzaOra ? "Partita finita? " : "La diretta è finita. "}
             <a href={video.replicaTwitch} target="_blank" rel="noopener noreferrer">Rivedila su Twitch ↗</a>
           </p>
         )}
@@ -155,7 +164,8 @@ const video = urlVideo ? riproduttore(urlVideo, [dominio, `www.${dominio}`, "loc
 <script>
   import { fase, type Fase } from "../lib/diretta";
 
-  const box = document.querySelector<HTMLElement>("[data-diretta]");
+  // Senza ora del fischio il riquadro e' fisso (video subito visibile): niente da fare qui.
+  const box = document.querySelector<HTMLElement>("[data-diretta]:not([data-senza-ora])");
   if (box) {
     const inizio = new Date(box.dataset.inizio ?? "");
     const attesa = box.querySelector<HTMLElement>("[data-attesa]");

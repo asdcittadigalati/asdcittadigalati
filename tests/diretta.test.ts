@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fase, riproduttore, inizioDa, normalizzaLink, ORE_IN_ONDA, GIORNI_REPLICA } from "../src/lib/diretta";
+import { fase, riproduttore, inizioDa, normalizzaLink, mostraRiquadro, ORE_IN_ONDA, GIORNI_REPLICA } from "../src/lib/diretta";
 
 const DOMINI = ["asdcittadigalati.it", "www.asdcittadigalati.it", "localhost"];
 const PARENT = "parent=asdcittadigalati.it&parent=www.asdcittadigalati.it&parent=localhost";
@@ -124,5 +124,23 @@ describe("link scritto a mano", () => {
   it("il riproduttore riconosce anche il link senza https://", () => {
     expect(riproduttore("twitch.tv/nomecanale", DOMINI)!.src).toContain("player.twitch.tv/?channel=nomecanale&");
     expect(riproduttore("youtu.be/dQw4w9WgXcQ", DOMINI)!.servizio).toBe("YouTube");
+  });
+});
+
+describe("riquadro in pagina", () => {
+  const ora = new Date("2026-10-12T12:00:00.000Z");
+  const senzaOra = inizioDa("");
+  it("interruttore spento: mai", () => {
+    expect(mostraRiquadro(false, new Date("2026-10-11T13:30:00Z"), "https://youtu.be/x", ora)).toBe(false);
+    expect(mostraRiquadro(false, senzaOra, "https://youtu.be/x", ora)).toBe(false);
+  });
+  it("con l'ora: fino a 7 giorni dal fischio, anche senza link", () => {
+    expect(mostraRiquadro(true, new Date("2026-10-11T13:30:00Z"), "", ora)).toBe(true);
+    expect(mostraRiquadro(true, new Date("2026-10-01T13:30:00Z"), "https://youtu.be/x", ora)).toBe(false);
+  });
+  it("senza ora: solo se c'e' un link, e senza scadenza", () => {
+    expect(mostraRiquadro(true, senzaOra, "https://www.twitch.tv/nome", ora)).toBe(true);
+    expect(mostraRiquadro(true, senzaOra, "  ", ora)).toBe(false);
+    expect(mostraRiquadro(true, senzaOra, "https://youtu.be/x", new Date("2027-06-01T00:00:00Z"))).toBe(true);
   });
 });
