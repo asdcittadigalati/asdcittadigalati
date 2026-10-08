@@ -326,11 +326,11 @@ collections:
         file: "src/data/diretta.json"
         description: "Il riquadro in home: conto alla rovescia prima della partita, la diretta per 3 ore dal fischio d'inizio, poi \"Rivedi la partita\" col video. Sparisce da solo 7 giorni dopo il fischio d'inizio."
         fields:
-          - label: "Mostra il riquadro"
+          - label: "Diretta e replica visibili in home"
             name: "attiva"
             widget: "boolean"
             default: false
-            hint: "Il riquadro sparisce da solo 7 giorni dopo il fischio d'inizio. Spegnilo qui solo per toglierlo prima."
+            hint: "Acceso: conto alla rovescia, diretta e poi replica in home. SPENTO e salvato: il video sparisce dal sito in 4-5 minuti, quando vuoi (anche a partita appena finita). Se lo lasci acceso sparisce comunque da solo 7 giorni dopo il fischio d'inizio."
           - label: "Titolo"
             name: "titolo"
             widget: "string"
