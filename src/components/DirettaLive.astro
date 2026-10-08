@@ -27,10 +27,20 @@ const attiva = mostraRiquadro(Boolean(diretta.attiva), inizio, urlVideo, new Dat
 
 // Twitch vuole nel riproduttore tutti i domini da cui il sito si apre.
 const dominio = Astro.site?.hostname ?? "localhost";
-const video = urlVideo ? riproduttore(urlVideo, [dominio, `www.${dominio}`, "localhost"]) : null;
+const domini = [dominio, `www.${dominio}`, "localhost"];
+const video = urlVideo ? riproduttore(urlVideo, domini) : null;
 ---
 {attiva && (
-  <section class="diretta" data-diretta data-inizio={senzaOra ? undefined : inizio.toISOString()} data-senza-ora={senzaOra ? "" : undefined} aria-labelledby="diretta-title">
+  <section
+    class="diretta"
+    data-diretta
+    data-inizio={senzaOra ? undefined : inizio.toISOString()}
+    data-senza-ora={senzaOra ? "" : undefined}
+    data-twitch-canale={video?.canaleTwitch}
+    data-twitch-src={video?.canaleTwitch ? video.src : undefined}
+    data-twitch-domini={video?.canaleTwitch ? domini.join(",") : undefined}
+    aria-labelledby="diretta-title"
+  >
     <div class="inner">
       <p class="etichetta font-display" data-etichetta>
         <span class="pallino" aria-hidden="true"></span>
@@ -162,12 +172,18 @@ const video = urlVideo ? riproduttore(urlVideo, [dominio, `www.${dominio}`, "loc
 </style>
 
 <script>
-  import { fase, type Fase } from "../lib/diretta";
+  import { fase, sceltaTwitch, srcVideoTwitch, type SceltaTwitch } from "../lib/diretta";
 
-  // Senza ora del fischio il riquadro e' fisso (video subito visibile): niente da fare qui.
-  const box = document.querySelector<HTMLElement>("[data-diretta]:not([data-senza-ora])");
+  // Stati del riquadro: "attesa" (conto alla rovescia), "in-onda", "replica",
+  // "libera" (senza ora del fischio: video subito visibile). Con un canale
+  // Twitch e le credenziali sul Worker, /api/twitch dice se il canale e' in
+  // diretta e qual e' il video salvato: la diretta vince sull'orologio (anche
+  // oltre le 3 ore) e a diretta finita il riproduttore passa da solo al video
+  // salvato, dentro il sito. Senza risposta da /api/twitch resta tutto com'era.
+  const box = document.querySelector<HTMLElement>("[data-diretta]");
   if (box) {
-    const inizio = new Date(box.dataset.inizio ?? "");
+    const senzaOra = box.hasAttribute("data-senza-ora");
+    const inizio = senzaOra ? null : new Date(box.dataset.inizio ?? "");
     const attesa = box.querySelector<HTMLElement>("[data-attesa]");
     const live = box.querySelector<HTMLElement>("[data-live]");
     const conto = box.querySelector<HTMLElement>("[data-conto]");
@@ -175,66 +191,131 @@ const video = urlVideo ? riproduttore(urlVideo, [dominio, `www.${dominio}`, "loc
     const etichetta = box.querySelector<HTMLElement>("[data-etichetta-testo]");
     const video = box.querySelector<HTMLElement>("[data-video]");
     const replicaTwitch = box.querySelector<HTMLElement>("[data-replica-twitch]");
+    const canale = box.dataset.twitchCanale;
+    const srcCanale = box.dataset.twitchSrc ?? "";
+    const domini = (box.dataset.twitchDomini ?? "").split(",").filter(Boolean);
+    let twitch: SceltaTwitch | null = null;
 
-    if (Number.isNaN(inizio.getTime())) {
-      // Data non valida inserita dal pannello: meglio nascondere tutto che
-      // mostrare "NaN" a un tifoso.
-      box.hidden = true;
-    } else {
-      const data = (opzioni: Intl.DateTimeFormatOptions) => inizio.toLocaleString("it-IT", opzioni);
-      let ultima: Fase | null = null;
+    const data = (opzioni: Intl.DateTimeFormatOptions) => inizio!.toLocaleString("it-IT", opzioni);
 
-      const mostra = (f: Fase) => {
-        if (f === ultima) return;
-        ultima = f;
-        box.classList.toggle("in-onda", f === "in-onda");
-        box.classList.toggle("replica", f === "replica");
-        // Finita la diretta senza un video da rivedere (nessun link, o un link
-        // non incorporabile): niente "Rivedi la partita" a vuoto per una settimana.
-        if (f === "scaduta" || (f === "replica" && !video && !replicaTwitch)) { box.hidden = true; return; }
-        if (attesa) attesa.hidden = f !== "attesa";
-        if (live) live.hidden = f === "attesa";
-        // Canale Twitch: finita la diretta il riproduttore direbbe "offline".
-        if (replicaTwitch && video) {
-          video.hidden = f === "replica";
-          replicaTwitch.hidden = f !== "replica";
-        }
-        if (etichetta) {
-          etichetta.textContent = f === "attesa" ? "Prossima diretta" : f === "in-onda" ? "In diretta ora" : "Rivedi la partita";
-        }
-        if (quando) {
-          quando.textContent =
-            f === "replica"
-              ? `Giocata ${data({ weekday: "long", day: "numeric", month: "long" })}`
-              : `Fischio d'inizio ${data({ weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}`;
-        }
-      };
+    // Cambia il riproduttore: nel modello (se il consenso non c'e' ancora) e
+    // nell'iframe gia' caricato. Solo se diverso, per non ricaricarlo.
+    const usaSrc = (src: string) => {
+      if (!src) return;
+      const embed = video?.querySelector<HTMLElement>("[data-embed]");
+      const modello = embed?.querySelector<HTMLTemplateElement>("template[data-embed-template]")?.content.querySelector("iframe");
+      if (modello && modello.getAttribute("src") !== src) modello.setAttribute("src", src);
+      // Iframe gia' caricato: si sostituisce invece di cambiarne src, che
+      // aggiungerebbe un passo al tasto Indietro del browser.
+      const caricato = embed?.querySelector<HTMLIFrameElement>(":scope > iframe");
+      if (caricato && caricato.getAttribute("src") !== src) {
+        const nuovo = caricato.cloneNode() as HTMLIFrameElement;
+        nuovo.setAttribute("src", src);
+        caricato.replaceWith(nuovo);
+      }
+    };
 
-      const aggiorna = () => {
-        const ora = new Date();
-        const f = fase(inizio, ora);
-        if (!f) return;
-        mostra(f);
-        if (f === "attesa" && conto) {
-          const s = Math.floor((inizio.getTime() - ora.getTime()) / 1000);
-          const g = Math.floor(s / 86400);
-          const o = Math.floor((s % 86400) / 3600);
-          const m = Math.floor((s % 3600) / 60);
-          const sec = s % 60;
-          conto.textContent =
-            g > 0
-              ? `${g}g ${o}h ${m}m`
-              : `${String(o).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-        }
-      };
+    const disegna = () => {
+      const ora = new Date();
+      const f = inizio ? fase(inizio, ora) : "libera";
+      if (!f || f === "scaduta") { box.hidden = true; return; }
 
-      aggiorna();
-      // Al secondo quando il conto mostra i secondi (ultime 24 ore prima del
-      // fischio), altrimenti ogni 30 secondi: basta per cambiare fase
-      // (diretta, replica, sparito) anche con la pagina aperta a lungo.
+      // Una diretta sul canale conta solo vicino al fischio d'inizio (da un'ora
+      // prima a 12 ore dopo): un allenamento giorni prima non prende il posto
+      // del conto alla rovescia. Senza ora conta sempre.
+      const vicino = !inizio || (ora.getTime() >= inizio.getTime() - 3600_000 && ora.getTime() <= inizio.getTime() + 12 * 3600_000);
+      const inDiretta = twitch?.modo === "canale" && vicino;
+      // Il video salvato solo a partita finita: durante la fase "in onda" resta il canale.
+      const salvato = twitch && twitch.modo === "video" && (f === "replica" || f === "libera") ? twitch : null;
+      const archivioVuoto = twitch?.modo === "nessuno";
+      const stato = inDiretta ? "in-onda" : salvato ? "replica" : f;
+
+      let conVideo = true;
+      let conLink = false;
+      if (inDiretta) usaSrc(srcCanale);
+      else if (salvato) {
+        usaSrc(srcVideoTwitch(salvato.id, domini));
+        // Diretta interrotta e ripresa: piu' video, il collegamento li mostra tutti.
+        conLink = salvato.altri && Boolean(replicaTwitch);
+      } else {
+        usaSrc(srcCanale);
+        if (stato === "replica") {
+          // Finita la diretta senza un video da rivedere (nessun link, o
+          // archivio Twitch vuoto): niente "Rivedi la partita" a vuoto.
+          if ((!video && !replicaTwitch) || archivioVuoto) { box.hidden = true; return; }
+          conVideo = !replicaTwitch;
+          conLink = Boolean(replicaTwitch);
+        } else if (stato === "libera") {
+          conLink = Boolean(replicaTwitch) && !archivioVuoto;
+        }
+      }
+
+      box.hidden = false;
+      box.classList.toggle("in-onda", stato === "in-onda");
+      box.classList.toggle("replica", stato === "replica");
+      if (attesa) attesa.hidden = stato !== "attesa";
+      if (live) live.hidden = stato === "attesa";
+      if (video) video.hidden = !conVideo;
+      if (replicaTwitch) replicaTwitch.hidden = !conLink;
+      if (etichetta) {
+        etichetta.textContent =
+          stato === "attesa" ? "Prossima diretta"
+          : stato === "in-onda" ? "In diretta ora"
+          : stato === "replica" ? "Rivedi la partita"
+          : "Guarda la partita";
+      }
+      if (quando && inizio) {
+        quando.textContent =
+          stato === "replica"
+            ? `Giocata ${data({ weekday: "long", day: "numeric", month: "long" })}`
+            : `Fischio d'inizio ${data({ weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}`;
+      }
+      if (stato === "attesa" && conto && inizio) {
+        const s = Math.max(0, Math.floor((inizio.getTime() - ora.getTime()) / 1000));
+        const g = Math.floor(s / 86400);
+        const o = Math.floor((s % 86400) / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+        conto.textContent =
+          g > 0
+            ? `${g}g ${o}h ${m}m`
+            : `${String(o).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+      }
+    };
+
+    disegna();
+
+    // Orologio: al secondo quando il conto mostra i secondi (ultime 24 ore),
+    // altrimenti ogni 30 secondi, per cambiare fase anche a pagina aperta.
+    if (inizio && !Number.isNaN(inizio.getTime())) {
       const passo = () => (fase(inizio, new Date()) === "attesa" && inizio.getTime() - Date.now() < 86_400_000 ? 1000 : 30_000);
-      const giro = () => { aggiorna(); if (ultima !== "scaduta") setTimeout(giro, passo()); };
+      const giro = () => { disegna(); if (fase(inizio, new Date()) !== "scaduta") setTimeout(giro, passo()); };
       setTimeout(giro, passo());
+    }
+
+    // Twitch: stato del canale ogni minuto (il Worker lo tiene in cache un
+    // minuto), solo con la pagina in vista.
+    if (canale) {
+      // Durante una diretta una sola risposta "non in onda" (linea debole) non
+      // basta a cambiare: servono due di fila.
+      let vistoLive = false;
+      let offlineDiFila = 0;
+      const chiedi = async () => {
+        if (document.hidden || box.hidden) return;
+        try {
+          const r = await fetch(`/api/twitch?canale=${encodeURIComponent(canale)}`);
+          if (!r.ok) return;
+          const stato = await r.json();
+          if (stato.live) { vistoLive = true; offlineDiFila = 0; } else offlineDiFila++;
+          twitch = !stato.live && vistoLive && offlineDiFila < 2 ? { modo: "canale" } : sceltaTwitch(stato, inizio, new Date());
+          disegna();
+        } catch {
+          // rete assente: si riprova al prossimo giro
+        }
+      };
+      chiedi();
+      setInterval(chiedi, 60_000);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) chiedi(); });
     }
   }
 </script>

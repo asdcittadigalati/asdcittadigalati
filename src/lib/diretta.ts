@@ -74,13 +74,46 @@ export interface Riproduttore {
   altezza: string;
   nota: string;
   // Solo per un canale Twitch: a diretta finita il riproduttore del canale
-  // mostra "offline", quindi in replica si rimanda ai video salvati.
+  // mostra "offline", quindi in replica si rimanda ai video salvati, o il
+  // browser passa da solo al video salvato (vedi sceltaTwitch).
   replicaTwitch?: string;
+  canaleTwitch?: string;
 }
 
 const SEDICI_NONI = "min(506px, 56.25vw)";
 const nota = (chi: string, server: string) =>
   `La diretta è trasmessa da ${chi}: per vederla qui il browser deve collegarsi ai server di ${server}, che possono impostare cookie propri.`;
+
+// Riproduttore Twitch di un video salvato (la documentazione vuole "v" davanti
+// all'ID). Usato anche dal browser quando passa da solo alla replica.
+export function srcVideoTwitch(id: string, domini: string[]): string {
+  const parent = domini.map((d) => `parent=${encodeURIComponent(d)}`).join("&");
+  return `https://player.twitch.tv/?video=v${id}&${parent}&autoplay=false`;
+}
+
+// Stato di un canale come lo restituisce /api/twitch (worker/twitch.mjs).
+export interface StatoTwitch {
+  live: boolean;
+  video: { id: string; creato: string }[];
+}
+// "altri": piu' video della stessa partita (diretta interrotta e ripresa).
+export type SceltaTwitch = { modo: "canale" } | { modo: "video"; id: string; altri: boolean } | { modo: "nessuno" };
+
+// Cosa mostrare per un canale Twitch: in diretta il canale; altrimenti il
+// video salvato della partita, cioe' il piu' recente nato tra 3 ore prima e
+// 12 ore dopo il fischio d'inizio (senza ora: negli ultimi 7 giorni). Cosi'
+// un vecchio video di un'altra partita non passa per la replica di questa.
+export function sceltaTwitch(stato: StatoTwitch, inizio: Date | null, ora: Date): SceltaTwitch {
+  if (stato.live) return { modo: "canale" };
+  const conOra = inizio && !Number.isNaN(inizio.getTime());
+  const da = conOra ? inizio.getTime() - 3 * 3600_000 : ora.getTime() - GIORNI_REPLICA * 86_400_000;
+  const a = conOra ? inizio.getTime() + 12 * 3600_000 : ora.getTime();
+  const buoni = (stato.video ?? [])
+    .map((v) => ({ id: String(v.id), t: Date.parse(v.creato) }))
+    .filter((v) => /^\d+$/.test(v.id) && v.t >= da && v.t <= a)
+    .sort((x, y) => y.t - x.t);
+  return buoni.length ? { modo: "video", id: buoni[0].id, altri: buoni.length > 1 } : { modo: "nessuno" };
+}
 
 // Percorsi di twitch.tv che non sono nomi di canale.
 const NON_CANALI = new Set(["videos", "directory", "p", "settings", "subscriptions", "inventory", "wallet", "downloads", "search", "login", "signup", "jobs", "turbo", "prime"]);
@@ -123,8 +156,7 @@ export function riproduttore(link: string, domini: string[]): Riproduttore | nul
   if (host === "twitch.tv" || host === "go.twitch.tv") {
     const parti = u.pathname.split("/").filter(Boolean);
     if (parti[0] === "videos" && /^\d+$/.test(parti[1] ?? "")) {
-      // La documentazione di Twitch vuole l'ID del video con il prefisso "v".
-      return tw(`https://player.twitch.tv/?video=v${parti[1]}&${parent}&autoplay=false`);
+      return tw(srcVideoTwitch(parti[1], domini));
     }
     if (parti[1] === "clip" && parti[2]) {
       return tw(`https://clips.twitch.tv/embed?clip=${encodeURIComponent(parti[2])}&${parent}&autoplay=false`);
@@ -133,6 +165,7 @@ export function riproduttore(link: string, domini: string[]): Riproduttore | nul
       const canale = parti[0].toLowerCase();
       return tw(`https://player.twitch.tv/?channel=${canale}&${parent}&autoplay=true&muted=true`, {
         replicaTwitch: `https://www.twitch.tv/${canale}/videos?filter=archives`,
+        canaleTwitch: canale,
       });
     }
     return null;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fase, riproduttore, inizioDa, normalizzaLink, mostraRiquadro, ORE_IN_ONDA, GIORNI_REPLICA } from "../src/lib/diretta";
+import { fase, riproduttore, inizioDa, normalizzaLink, mostraRiquadro, sceltaTwitch, srcVideoTwitch, ORE_IN_ONDA, GIORNI_REPLICA } from "../src/lib/diretta";
 
 const DOMINI = ["asdcittadigalati.it", "www.asdcittadigalati.it", "localhost"];
 const PARENT = "parent=asdcittadigalati.it&parent=www.asdcittadigalati.it&parent=localhost";
@@ -142,5 +142,33 @@ describe("riquadro in pagina", () => {
     expect(mostraRiquadro(true, senzaOra, "https://www.twitch.tv/nome", ora)).toBe(true);
     expect(mostraRiquadro(true, senzaOra, "  ", ora)).toBe(false);
     expect(mostraRiquadro(true, senzaOra, "https://youtu.be/x", new Date("2027-06-01T00:00:00Z"))).toBe(true);
+  });
+});
+
+describe("Twitch: diretta o replica dentro il sito", () => {
+  const inizio = new Date("2026-10-11T13:30:00Z");
+  const v = (id: string, creato: string) => ({ id, creato });
+  it("in diretta: il canale, anche se ci sono video", () => {
+    expect(sceltaTwitch({ live: true, video: [v("1", "2026-10-11T13:20:00Z")] }, inizio, new Date("2026-10-11T18:00:00Z"))).toEqual({ modo: "canale" });
+  });
+  it("finita: il video della partita (da 3 ore prima a 12 ore dopo il fischio), il piu' recente", () => {
+    const stato = { live: false, video: [v("9", "2026-10-04T13:00:00Z"), v("10", "2026-10-11T13:10:00Z"), v("11", "2026-10-11T15:40:00Z")] };
+    expect(sceltaTwitch(stato, inizio, new Date("2026-10-12T10:00:00Z"))).toEqual({ modo: "video", id: "11", altri: true });
+  });
+  it("un video di un'altra partita non vale", () => {
+    expect(sceltaTwitch({ live: false, video: [v("9", "2026-10-04T13:00:00Z")] }, inizio, new Date("2026-10-12T10:00:00Z"))).toEqual({ modo: "nessuno" });
+  });
+  it("senza ora: il video piu' recente degli ultimi 7 giorni", () => {
+    const ora = new Date("2026-10-12T10:00:00Z");
+    expect(sceltaTwitch({ live: false, video: [v("5", "2026-10-11T13:00:00Z"), v("3", "2026-09-30T13:00:00Z")] }, null, ora)).toEqual({ modo: "video", id: "5", altri: false });
+    expect(sceltaTwitch({ live: false, video: [v("3", "2026-09-30T13:00:00Z")] }, null, ora)).toEqual({ modo: "nessuno" });
+  });
+  it("archivio spento (nessun video): nessuno", () => {
+    expect(sceltaTwitch({ live: false, video: [] }, null, new Date())).toEqual({ modo: "nessuno" });
+  });
+  it("indirizzo del video salvato con la v e i domini", () => {
+    expect(srcVideoTwitch("2277656159", ["asdcittadigalati.it", "localhost"])).toBe(
+      "https://player.twitch.tv/?video=v2277656159&parent=asdcittadigalati.it&parent=localhost&autoplay=false"
+    );
   });
 });

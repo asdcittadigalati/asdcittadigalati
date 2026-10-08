@@ -1,10 +1,12 @@
 // Cloudflare Workers: il sito sono i file statici di dist/ (serviti da
 // Cloudflare, con _headers e _redirects). Il Worker passa prima di tutto per
 // le pagine (redirect da http a https), per /auth e /callback (accesso al
-// pannello) e per /api/classifica; immagini e script vanno dritti (vedi
+// pannello), per /api/classifica e /api/twitch (diretta: in onda o replica,
+// worker/twitch.mjs); immagini e script vanno dritti (vedi
 // run_worker_first in wrangler.jsonc). La logica OAuth e' in oauth/.
 import { avvia } from "../oauth/auth.mjs";
 import { completa } from "../oauth/callback.mjs";
+import { twitch } from "./twitch.mjs";
 import { leggiClassifica } from "../src/lib/classifica.ts";
 import { WIDGET_URLS } from "../src/lib/tuttocampo.ts";
 
@@ -56,6 +58,7 @@ export default {
     if (request.method === "GET" && pathname === "/auth") return avvia(request, env);
     if (request.method === "GET" && pathname === "/callback") return completa(request, env);
     if (request.method === "GET" && pathname === "/api/classifica") return classifica(request, ctx);
+    if (request.method === "GET" && pathname === "/api/twitch") return twitch(request, env, ctx);
     return env.ASSETS.fetch(request);
   },
 };
