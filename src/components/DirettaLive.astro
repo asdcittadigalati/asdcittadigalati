@@ -1,58 +1,34 @@
 ---
-// Riquadro della diretta: conto alla rovescia prima del fischio d'inizio,
-// video della diretta durante la partita: YouTube (il canale della societa')
-// o, se il link e' di Facebook, il riproduttore di Facebook.
+// Riquadro della diretta in home. Fasi (src/lib/diretta.ts):
+// - prima del fischio d'inizio: conto alla rovescia;
+// - per 3 ore: "In diretta ora" col video;
+// - fino a 7 giorni dal fischio d'inizio: "Rivedi la partita" col video;
+// - poi sparisce da solo, senza spegnerlo dal pannello.
+// Il video: YouTube, Twitch (canale, video salvato, clip) o Facebook, scelto
+// dal link incollato nel pannello.
 //
-// Perche' il passaggio fra i due stati avviene nel browser e non al momento
-// della compilazione: il sito e' statico, quindi se il conto alla rovescia
-// dipendesse dalla compilazione resterebbe fermo all'ora in cui e' stato
-// pubblicato. Cosi' invece basta che qualcuno attivi la diretta dal pannello
-// una volta, e il riquadro si trasforma da solo all'ora giusta.
+// Perche' il passaggio fra le fasi avviene nel browser e non al momento
+// della compilazione: il sito e' statico, quindi se dipendesse dalla
+// compilazione resterebbe fermo all'ora in cui e' stato pubblicato. Cosi'
+// basta attivare la diretta dal pannello una volta, e il riquadro cambia da
+// solo all'ora giusta. In compilazione si salta solo una diretta gia' scaduta.
 import diretta from "../data/diretta.json";
 import EmbedConsenso from "./EmbedConsenso.astro";
+import { fase, riproduttore, inizioDa, normalizzaLink } from "../lib/diretta";
 
-const attiva = Boolean(diretta.attiva && diretta.inizio);
-const urlVideo = diretta.urlVideo?.trim() ?? "";
+const urlVideo = normalizzaLink(diretta.urlVideo ?? "");
+// Ora assoluta (ISO con fuso): il browser di chiunque, anche all'estero, la
+// legge giusta. Una data non valida passa com'e' e il riquadro si nasconde.
+const inizio = inizioDa(diretta.inizio ?? "");
+const inizioValido = !Number.isNaN(inizio.getTime());
+const attiva = Boolean(diretta.attiva && diretta.inizio) && fase(inizio, new Date()) !== "scaduta";
 
-// Il riproduttore giusto si sceglie dal link incollato nel pannello.
-// YouTube: watch?v=, youtu.be/, /live/, /shorts/, /embed/ e il link "live"
-// del canale (/channel/UC.../live); in modalita' privacy avanzata
-// (youtube-nocookie). Il link /@nome/live non si puo' incorporare (serve
-// l'ID del canale): resta il pulsante per aprirlo su YouTube.
-function riproduttore(link: string) {
-  let u: URL;
-  try { u = new URL(link); } catch { return null; }
-  const host = u.hostname.replace(/^(www\.|m\.)/, "");
-  const yt = (id: string) => ({
-    src: `https://www.youtube-nocookie.com/embed/${id}`,
-    servizio: "YouTube",
-    altezza: "min(506px, 56.25vw)",
-    nota: "La diretta è trasmessa da YouTube: per vederla qui il browser deve collegarsi ai server di Google, che possono impostare cookie propri.",
-  });
-  if (host === "youtu.be") return yt(u.pathname.slice(1).split("/")[0]);
-  if (host.endsWith("youtube.com")) {
-    const v = u.searchParams.get("v");
-    if (v) return yt(v);
-    const m = u.pathname.match(/^\/(?:live|shorts|embed)\/([\w-]{6,})/);
-    if (m) return yt(m[1]);
-    const canale = u.pathname.match(/^\/channel\/(UC[\w-]+)\/live/);
-    if (canale) return { ...yt(""), src: `https://www.youtube.com/embed/live_stream?channel=${canale[1]}` };
-    return null;
-  }
-  if (host.endsWith("facebook.com") || host === "fb.watch") {
-    return {
-      src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(link)}&show_text=false&width=800`,
-      servizio: "Facebook",
-      altezza: "460px",
-      nota: "La diretta è trasmessa da Facebook: per vederla qui il browser deve collegarsi ai loro server, che possono impostare cookie propri.",
-    };
-  }
-  return null;
-}
-const video = urlVideo ? riproduttore(urlVideo) : null;
+// Twitch vuole nel riproduttore tutti i domini da cui il sito si apre.
+const dominio = Astro.site?.hostname ?? "localhost";
+const video = urlVideo ? riproduttore(urlVideo, [dominio, `www.${dominio}`, "localhost"]) : null;
 ---
 {attiva && (
-  <section class="diretta" data-diretta data-inizio={diretta.inizio} aria-labelledby="diretta-title">
+  <section class="diretta" data-diretta data-inizio={inizioValido ? inizio.toISOString() : diretta.inizio} aria-labelledby="diretta-title">
     <div class="inner">
       <p class="etichetta font-display" data-etichetta>
         <span class="pallino" aria-hidden="true"></span>
@@ -68,27 +44,36 @@ const video = urlVideo ? riproduttore(urlVideo) : null;
         <p class="conto font-display" data-conto aria-live="off">
           <span class="sr-only">Mancano </span>
         </p>
-        <p class="quando" data-quando></p>
       </div>
+      <p class="quando" data-quando></p>
 
-      {/* Dal fischio d'inizio in poi */}
+      {/* Dal fischio d'inizio in poi (diretta, poi replica) */}
       <div class="live" data-live hidden>
         {video ? (
-          <EmbedConsenso
-            src={video.src}
-            title={`Diretta: ${diretta.titolo || "partita"}`}
-            servizio={video.servizio}
-            altezza={video.altezza}
-            nota={video.nota}
-            apri={urlVideo}
-          />
+          <div data-video>
+            <EmbedConsenso
+              src={video.src}
+              title={`Diretta: ${diretta.titolo || "partita"}`}
+              servizio={video.servizio}
+              altezza={video.altezza}
+              nota={video.nota}
+              apri={urlVideo}
+              video
+            />
+          </div>
         ) : urlVideo ? (
           <p class="senza-video">
-            <a href={urlVideo} target="_blank" rel="noopener noreferrer">Guarda la diretta su YouTube ↗</a>
+            <a href={urlVideo} target="_blank" rel="noopener noreferrer">Guarda la diretta ↗</a>
           </p>
         ) : (
           <p class="senza-video">
-            La diretta è in partenza sul canale YouTube della società.
+            La diretta è in partenza sui canali della società.
+          </p>
+        )}
+        {video?.replicaTwitch && (
+          <p class="senza-video" data-replica-twitch hidden>
+            La diretta è finita.{" "}
+            <a href={video.replicaTwitch} target="_blank" rel="noopener noreferrer">Rivedila su Twitch ↗</a>
           </p>
         )}
       </div>
@@ -122,11 +107,13 @@ const video = urlVideo ? riproduttore(urlVideo) : null;
     background: var(--rosso);
   }
   /* Il pallino pulsa solo quando si e' davvero in onda: prima sarebbe una
-     bugia visiva. */
+     bugia visiva. In replica e' spento. */
   .diretta.in-onda .pallino {
     box-shadow: 0 0 10px var(--rosso);
     animation: pulsa 1.6s ease-in-out infinite;
   }
+  .diretta.replica .pallino { background: color-mix(in oklch, var(--text) 45%, transparent); }
+  .diretta.replica .etichetta { color: color-mix(in oklch, var(--text) 75%, transparent); }
   @keyframes pulsa {
     0%, 100% { opacity: 0.35; }
     50% { opacity: 1; }
@@ -148,7 +135,9 @@ const video = urlVideo ? riproduttore(urlVideo) : null;
     font-size: 0.9rem;
     color: color-mix(in oklch, var(--text) 78%, transparent);
   }
+  .live { margin-top: 1rem; }
   .senza-video { margin: 0; }
+  .senza-video[hidden], [data-video][hidden] { display: none; }
   .sr-only {
     position: absolute;
     width: 1px;
@@ -164,6 +153,8 @@ const video = urlVideo ? riproduttore(urlVideo) : null;
 </style>
 
 <script>
+  import { fase, type Fase } from "../lib/diretta";
+
   const box = document.querySelector<HTMLElement>("[data-diretta]");
   if (box) {
     const inizio = new Date(box.dataset.inizio ?? "");
@@ -172,57 +163,68 @@ const video = urlVideo ? riproduttore(urlVideo) : null;
     const conto = box.querySelector<HTMLElement>("[data-conto]");
     const quando = box.querySelector<HTMLElement>("[data-quando]");
     const etichetta = box.querySelector<HTMLElement>("[data-etichetta-testo]");
+    const video = box.querySelector<HTMLElement>("[data-video]");
+    const replicaTwitch = box.querySelector<HTMLElement>("[data-replica-twitch]");
 
     if (Number.isNaN(inizio.getTime())) {
       // Data non valida inserita dal pannello: meglio nascondere tutto che
       // mostrare "NaN" a un tifoso.
       box.hidden = true;
     } else {
-      if (quando) {
-        quando.textContent = `Fischio d'inizio ${inizio.toLocaleString("it-IT", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          hour: "2-digit",
-          minute: "2-digit",
-        })}`;
-      }
+      const data = (opzioni: Intl.DateTimeFormatOptions) => inizio.toLocaleString("it-IT", opzioni);
+      let ultima: Fase | null = null;
 
-      const vaiInOnda = () => {
-        box.classList.add("in-onda");
-        if (etichetta) etichetta.textContent = "In diretta ora";
-        if (attesa) attesa.hidden = true;
-        if (live) live.hidden = false;
+      const mostra = (f: Fase) => {
+        if (f === ultima) return;
+        ultima = f;
+        box.classList.toggle("in-onda", f === "in-onda");
+        box.classList.toggle("replica", f === "replica");
+        // Finita la diretta senza un video da rivedere (nessun link, o un link
+        // non incorporabile): niente "Rivedi la partita" a vuoto per una settimana.
+        if (f === "scaduta" || (f === "replica" && !video && !replicaTwitch)) { box.hidden = true; return; }
+        if (attesa) attesa.hidden = f !== "attesa";
+        if (live) live.hidden = f === "attesa";
+        // Canale Twitch: finita la diretta il riproduttore direbbe "offline".
+        if (replicaTwitch && video) {
+          video.hidden = f === "replica";
+          replicaTwitch.hidden = f !== "replica";
+        }
+        if (etichetta) {
+          etichetta.textContent = f === "attesa" ? "Prossima diretta" : f === "in-onda" ? "In diretta ora" : "Rivedi la partita";
+        }
+        if (quando) {
+          quando.textContent =
+            f === "replica"
+              ? `Giocata ${data({ weekday: "long", day: "numeric", month: "long" })}`
+              : `Fischio d'inizio ${data({ weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}`;
+        }
       };
 
       const aggiorna = () => {
-        const mancano = inizio.getTime() - Date.now();
-        if (mancano <= 0) {
-          vaiInOnda();
-          return false; // niente piu' aggiornamenti
-        }
-        const s = Math.floor(mancano / 1000);
-        const g = Math.floor(s / 86400);
-        const o = Math.floor((s % 86400) / 3600);
-        const m = Math.floor((s % 3600) / 60);
-        const sec = s % 60;
-        if (conto) {
+        const ora = new Date();
+        const f = fase(inizio, ora);
+        if (!f) return;
+        mostra(f);
+        if (f === "attesa" && conto) {
+          const s = Math.floor((inizio.getTime() - ora.getTime()) / 1000);
+          const g = Math.floor(s / 86400);
+          const o = Math.floor((s % 86400) / 3600);
+          const m = Math.floor((s % 3600) / 60);
+          const sec = s % 60;
           conto.textContent =
             g > 0
               ? `${g}g ${o}h ${m}m`
               : `${String(o).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
         }
-        return true;
       };
 
-      if (aggiorna()) {
-        // Sotto l'ora si aggiorna al secondo, sopra basta il minuto: un
-        // conto alla rovescia di tre giorni non ha bisogno di 86.400 tick.
-        const lontano = inizio.getTime() - Date.now() > 3600_000;
-        const timer = setInterval(() => {
-          if (!aggiorna()) clearInterval(timer);
-        }, lontano ? 30_000 : 1000);
-      }
+      aggiorna();
+      // Al secondo quando il conto mostra i secondi (ultime 24 ore prima del
+      // fischio), altrimenti ogni 30 secondi: basta per cambiare fase
+      // (diretta, replica, sparito) anche con la pagina aperta a lungo.
+      const passo = () => (fase(inizio, new Date()) === "attesa" && inizio.getTime() - Date.now() < 86_400_000 ? 1000 : 30_000);
+      const giro = () => { aggiorna(); if (ultima !== "scaduta") setTimeout(giro, passo()); };
+      setTimeout(giro, passo());
     }
   }
 </script>

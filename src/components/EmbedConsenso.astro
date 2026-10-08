@@ -15,14 +15,24 @@ interface Props {
   apri?: string; // link al contenuto originale, per chi non vuole caricarlo qui
   // false: il riquadro non scorre al suo interno, rotella e dito fanno scorrere la pagina.
   scorre?: boolean;
+  // true per i video: senza questi permessi un riproduttore di un altro sito
+  // (YouTube, Twitch, Facebook) non puo' andare a schermo intero.
+  video?: boolean;
 }
-const { src, title, servizio, altezza = "100%", nota, apri, scorre = true } = Astro.props;
+const { src, title, servizio, altezza = "100%", nota, apri, scorre = true, video = false } = Astro.props;
 const id = `embed-${Math.random().toString(36).slice(2, 9)}`;
 ---
 <div class="embed" data-embed data-servizio={servizio} data-fisso={scorre ? undefined : ""} style={`--embed-h:${altezza}`}>
   <!-- Il contenuto vero sta in un <template>: inerte finche' non si accetta. -->
   <template data-embed-template>
-    <iframe src={src} title={title} loading="lazy" scrolling={scorre ? undefined : "no"}></iframe>
+    <iframe
+      src={src}
+      title={title}
+      loading="lazy"
+      scrolling={scorre ? undefined : "no"}
+      allow={video ? "autoplay; fullscreen; picture-in-picture; encrypted-media" : undefined}
+      allowfullscreen={video || undefined}
+    ></iframe>
   </template>
 
   <div class="embed-blocco" id={id}>
