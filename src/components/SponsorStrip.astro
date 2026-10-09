@@ -9,7 +9,7 @@ const sponsors = (await getCollection("sponsor")).sort(
 {sponsors.length > 0 && (
   <section class="sponsor-strip" aria-labelledby="sponsor-title">
     <div class="inner">
-      <h2 id="sponsor-title" class="font-display">Ringraziamenti</h2>
+      <h2 id="sponsor-title" class="font-display"><a href="/ringraziamenti">Ringraziamenti <span aria-hidden="true">→</span></a></h2>
     </div>
     {/* Nastro scorrevole: la lista è duplicata (copia aria-hidden) per chiudere
         il giro senza vuoti. Si ferma su hover/focus e con reduced-motion. */}
@@ -64,6 +64,15 @@ const sponsors = (await getCollection("sponsor")).sort(
     color: var(--bg);
     font-size: clamp(1.5rem, 3.5vw, 2rem);
     margin: 0 0 2rem;
+  }
+  .sponsor-strip h2 a {
+    color: inherit;
+    text-decoration: none;
+    text-underline-offset: 0.2em;
+  }
+  .sponsor-strip h2 a:hover,
+  .sponsor-strip h2 a:focus-visible {
+    text-decoration: underline;
   }
   .marquee {
     display: flex;
