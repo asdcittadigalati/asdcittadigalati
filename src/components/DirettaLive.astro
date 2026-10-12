@@ -15,6 +15,9 @@
 import diretta from "../data/diretta.json";
 import EmbedConsenso from "./EmbedConsenso.astro";
 import { mostraRiquadro, riproduttore, inizioDa, normalizzaLink } from "../lib/diretta";
+import Tabellino from "./Tabellino.astro";
+import squadre from "../data/squadre.json";
+import { datiTabellino } from "../lib/tabellino";
 
 const urlVideo = normalizzaLink(diretta.urlVideo ?? "");
 // Ora assoluta (ISO con fuso): il browser di chiunque, anche all'estero, la
@@ -29,6 +32,9 @@ const attiva = mostraRiquadro(Boolean(diretta.attiva), inizio, urlVideo, new Dat
 const dominio = Astro.site?.hostname ?? "localhost";
 const domini = [dominio, `www.${dominio}`, "localhost"];
 const video = urlVideo ? riproduttore(urlVideo, domini) : null;
+
+// Tabellino (fascia sopra il video): dati del pannello gia' risolti.
+const tabellino = datiTabellino(diretta, squadre);
 ---
 {attiva && (
   <section
@@ -65,27 +71,31 @@ const video = urlVideo ? riproduttore(urlVideo, domini) : null;
 
       {/* Dal fischio d'inizio in poi (diretta, poi replica); senza ora: subito */}
       <div class="live" data-live hidden={!senzaOra}>
-        {video ? (
-          <div data-video>
-            <EmbedConsenso
-              src={video.src}
-              title={`Diretta: ${diretta.titolo || "partita"}`}
-              servizio={video.servizio}
-              altezza={video.altezza}
-              nota={video.nota}
-              apri={urlVideo}
-              video
-            />
-          </div>
-        ) : urlVideo ? (
-          <p class="senza-video">
-            <a href={urlVideo} target="_blank" rel="noopener noreferrer">Guarda la diretta ↗</a>
-          </p>
-        ) : (
-          <p class="senza-video">
-            La diretta è in partenza sui canali della società.
-          </p>
-        )}
+        <div class="tv" data-tv>
+          <Tabellino dati={tabellino} />
+          {video ? (
+            <div data-video>
+              <EmbedConsenso
+                src={video.src}
+                title={`Diretta: ${diretta.titolo || "partita"}`}
+                servizio={video.servizio}
+                altezza={video.altezza}
+                nota={video.nota}
+                apri={urlVideo}
+                video
+                schermoIntero={video.servizio !== "Twitch"}
+              />
+            </div>
+          ) : urlVideo ? (
+            <p class="senza-video">
+              <a href={urlVideo} target="_blank" rel="noopener noreferrer">Guarda la diretta ↗</a>
+            </p>
+          ) : (
+            <p class="senza-video">
+              La diretta è in partenza sui canali della società.
+            </p>
+          )}
+        </div>
         {/* Canale Twitch: a diretta finita il riproduttore direbbe "offline".
             Con l'ora lo script lo sostituisce con questo collegamento; senza ora
             (nessuna fase) il collegamento sta sempre sotto il video. */}
@@ -165,6 +175,50 @@ const video = urlVideo ? riproduttore(urlVideo, domini) : null;
     clip-path: inset(50%);
     white-space: nowrap;
   }
+
+  /* Schermo intero del riquadro (pulsante nella fascia del tabellino): video
+     16:9 il piu' grande possibile, fascia sopra o, su schermi molto larghi,
+     di lato. .steso = schermo intero simulato dove il browser non lo permette
+     (iPhone). */
+  .tv:fullscreen,
+  .tv.steso {
+    display: flex;
+    flex-direction: column;
+    background: #000;
+  }
+  .tv.steso {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    height: 100dvh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .tv:fullscreen [data-video],
+  .tv.steso [data-video] {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    container-type: size;
+    display: grid;
+    place-items: center;
+  }
+  .tv:fullscreen :global(.embed),
+  .tv.steso :global(.embed) {
+    width: min(100cqw, 100cqh * 16 / 9);
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+  .tv:fullscreen :global(.embed iframe),
+  .tv.steso :global(.embed iframe) {
+    height: 100%;
+    min-height: 0;
+  }
+  @media (min-aspect-ratio: 2/1) {
+    .tv:fullscreen,
+    .tv.steso { flex-direction: row; }
+  }
+  :global(html.tv-stesa) { overflow: hidden; }
 
   @media (prefers-reduced-motion: reduce) {
     .diretta.in-onda .pallino { animation: none; opacity: 1; }

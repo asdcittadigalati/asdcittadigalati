@@ -18,8 +18,11 @@ interface Props {
   // true per i video: senza questi permessi un riproduttore di un altro sito
   // (YouTube, Twitch, Facebook) non puo' andare a schermo intero.
   video?: boolean;
+  // false: niente schermo intero interno al riproduttore (Twitch: lo schermo
+  // intero lo fa il riquadro della diretta, che tiene visibile il tabellino).
+  schermoIntero?: boolean;
 }
-const { src, title, servizio, altezza = "100%", nota, apri, scorre = true, video = false } = Astro.props;
+const { src, title, servizio, altezza = "100%", nota, apri, scorre = true, video = false, schermoIntero = true } = Astro.props;
 const id = `embed-${Math.random().toString(36).slice(2, 9)}`;
 ---
 <div class="embed" data-embed data-servizio={servizio} data-fisso={scorre ? undefined : ""} style={`--embed-h:${altezza}`}>
@@ -30,8 +33,8 @@ const id = `embed-${Math.random().toString(36).slice(2, 9)}`;
       title={title}
       loading="lazy"
       scrolling={scorre ? undefined : "no"}
-      allow={video ? "autoplay; fullscreen; picture-in-picture; encrypted-media" : undefined}
-      allowfullscreen={video || undefined}
+      allow={video ? (schermoIntero ? "autoplay; fullscreen; picture-in-picture; encrypted-media" : "autoplay; picture-in-picture; encrypted-media") : undefined}
+      allowfullscreen={(video && schermoIntero) || undefined}
     ></iframe>
   </template>
 
