@@ -51,14 +51,19 @@ function scartoRoma(t: number): number {
   return Date.UTC(v("year"), v("month") - 1, v("day"), v("hour"), v("minute"), v("second")) - Math.floor(t / 1000) * 1000;
 }
 
-// Testo del pulsante "Condividi la diretta" (menu di condivisione del
-// telefono o WhatsApp): titolo della partita e link corto /diretta.
-export function testoCondivisione(titolo: string, url: string): string {
+// Testo del pulsante "Condividi la diretta" secondo lo stato del riquadro
+// (attesa, in-onda, replica, libera): chi lo riceve deve sapere se trova la
+// diretta, il conto alla rovescia o la replica. Il link si aggiunge a parte.
+const PRIMA_DEL_TITOLO: Record<string, string> = { attesa: "Prossima diretta", replica: "Rivedi la partita" };
+export function testoCondivisione(titolo: string, stato: string): string {
   const t = (titolo ?? "").trim();
-  return `Partita in diretta${t ? `: ${t}` : ""} 👉 ${url}`;
+  const prima = PRIMA_DEL_TITOLO[stato] ?? "Partita in diretta";
+  return t ? `${prima}: ${t}` : prima;
 }
 
-export const linkWhatsApp = (testo: string) => `https://wa.me/?text=${encodeURIComponent(testo)}`;
+// WhatsApp, dove il menu di condivisione del sistema non c'e': testo e link insieme.
+export const linkWhatsApp = (testo: string, url: string) =>
+  `https://wa.me/?text=${encodeURIComponent(`${testo} 👉 ${url}`)}`;
 
 // Link incollato o scritto a mano: senza "https://" il browser lo
 // tratterebbe come una pagina del sito (404).

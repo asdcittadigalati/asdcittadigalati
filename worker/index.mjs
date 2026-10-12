@@ -61,7 +61,7 @@ export default {
     if (request.method === "GET" && pathname === "/api/twitch") return twitch(request, env, ctx);
     // Link corto da dire a voce, scrivere nelle storie o stampare in un QR:
     // porta dritto al riquadro della diretta in home.
-    if (request.method === "GET" && (pathname === "/diretta" || pathname === "/diretta/")) {
+    if ((request.method === "GET" || request.method === "HEAD") && /^\/diretta\/?$/i.test(pathname)) {
       return Response.redirect(new URL("/#diretta", url).href, 302);
     }
     return env.ASSETS.fetch(request);

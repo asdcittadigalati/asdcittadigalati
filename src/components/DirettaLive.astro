@@ -310,6 +310,7 @@ const tabellino = datiTabellino(diretta, squadre);
       const salvato = twitch && twitch.modo === "video" && (f === "replica" || f === "libera") ? twitch : null;
       const archivioVuoto = twitch?.modo === "nessuno";
       const stato = inDiretta ? "in-onda" : salvato ? "replica" : f;
+      box.dataset.stato = stato; // per il testo di "Condividi la diretta"
 
       let conVideo = true;
       let conLink = false;
@@ -366,18 +367,21 @@ const tabellino = datiTabellino(diretta, squadre);
 
     disegna();
 
-    // "Condividi la diretta": il menu di condivisione del telefono se c'e',
-    // altrimenti WhatsApp (sul computer WhatsApp Web).
+    // "Condividi la diretta": il menu di condivisione del sistema dove c'e'
+    // (telefoni, Windows, Mac), altrimenti WhatsApp. Il link va a parte, cosi'
+    // arriva anche alle app che ignorano il testo (Facebook). Annullato o in
+    // errore (anche un secondo tocco a menu aperto): nessuna finestra in piu'.
     const condividi = box.querySelector<HTMLButtonElement>("[data-condividi]");
     if (condividi) {
       condividi.hidden = false;
       condividi.addEventListener("click", async () => {
-        const testo = testoCondivisione(condividi.dataset.titolo ?? "", `${location.origin}/diretta`);
+        const testo = testoCondivisione(condividi.dataset.titolo ?? "", box.dataset.stato ?? "");
+        const url = `${location.origin}/diretta`;
         if (navigator.share) {
-          try { await navigator.share({ text: testo }); return; }
-          catch (e) { if ((e as DOMException).name === "AbortError") return; }
+          try { await navigator.share({ text: `${testo} 👉`, url }); } catch { /* annullato */ }
+          return;
         }
-        window.open(linkWhatsApp(testo), "_blank", "noopener");
+        window.open(linkWhatsApp(testo, url), "_blank", "noopener");
       });
     }
 
