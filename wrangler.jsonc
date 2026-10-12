@@ -16,7 +16,8 @@
     // Indirizzi inesistenti: la pagina 404 del sito invece di una pagina bianca.
     "not_found_handling": "404-page",
     // Pagine attraverso il Worker (redirect http -> https, pannello); immagini,
-    // script e frame dell'hero no, cosi' non consumano richieste del piano gratuito.
-    "run_worker_first": ["/*", "!/_astro/*", "!/img/*", "!/hero-frames/*"]
+    // script, frame dell'hero e /tabellino.json (riletto ogni 20 s durante la
+    // diretta) no, cosi' non consumano richieste del piano gratuito.
+    "run_worker_first": ["/*", "!/_astro/*", "!/img/*", "!/hero-frames/*", "!/tabellino.json"]
   }
 }
