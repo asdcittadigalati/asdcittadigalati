@@ -38,6 +38,7 @@ const tabellino = datiTabellino(diretta, squadre);
 ---
 {attiva && (
   <section
+    id="diretta"
     class="diretta"
     data-diretta
     data-inizio={senzaOra ? undefined : inizio.toISOString()}
@@ -56,6 +57,11 @@ const tabellino = datiTabellino(diretta, squadre);
       <h2 id="diretta-title" class="font-display">
         {diretta.titolo || "Diretta dal campo"}
       </h2>
+
+      {/* Compare solo con JavaScript (senza, non farebbe nulla). */}
+      <p class="condividi">
+        <button type="button" data-condividi data-titolo={diretta.titolo ?? ""} hidden>Condividi la diretta</button>
+      </p>
 
       {/* Prima del fischio d'inizio (solo se l'ora c'e') */}
       {!senzaOra && (
@@ -112,6 +118,8 @@ const tabellino = datiTabellino(diretta, squadre);
 
 <style>
   .diretta {
+    /* /diretta porta qui (#diretta): spazio per la testata fissa in alto. */
+    scroll-margin-top: 5rem;
     background: color-mix(in oklch, var(--rosso) 12%, var(--surface));
     border-top: 2px solid var(--rosso);
     border-bottom: 2px solid var(--rosso);
@@ -164,6 +172,20 @@ const tabellino = datiTabellino(diretta, squadre);
     font-size: 0.9rem;
     color: color-mix(in oklch, var(--text) 78%, transparent);
   }
+  .condividi { margin: -0.5rem 0 1.25rem; }
+  .condividi button {
+    background: none;
+    border: 1px solid var(--giallo);
+    color: var(--giallo);
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+  }
+  .condividi button[hidden] { display: none; }
+  .condividi button:hover,
+  .condividi button:focus-visible { background: var(--giallo); color: var(--bg); }
   .live { margin-top: 1rem; }
   .senza-video { margin: 0; }
   .senza-video[hidden], [data-video][hidden] { display: none; }
@@ -231,7 +253,7 @@ const tabellino = datiTabellino(diretta, squadre);
 </style>
 
 <script>
-  import { fase, sceltaTwitch, srcVideoTwitch, type SceltaTwitch } from "../lib/diretta";
+  import { fase, sceltaTwitch, srcVideoTwitch, testoCondivisione, linkWhatsApp, type SceltaTwitch } from "../lib/diretta";
 
   // Stati del riquadro: "attesa" (conto alla rovescia), "in-onda", "replica",
   // "libera" (senza ora del fischio: video subito visibile). Con un canale
@@ -343,6 +365,21 @@ const tabellino = datiTabellino(diretta, squadre);
     };
 
     disegna();
+
+    // "Condividi la diretta": il menu di condivisione del telefono se c'e',
+    // altrimenti WhatsApp (sul computer WhatsApp Web).
+    const condividi = box.querySelector<HTMLButtonElement>("[data-condividi]");
+    if (condividi) {
+      condividi.hidden = false;
+      condividi.addEventListener("click", async () => {
+        const testo = testoCondivisione(condividi.dataset.titolo ?? "", `${location.origin}/diretta`);
+        if (navigator.share) {
+          try { await navigator.share({ text: testo }); return; }
+          catch (e) { if ((e as DOMException).name === "AbortError") return; }
+        }
+        window.open(linkWhatsApp(testo), "_blank", "noopener");
+      });
+    }
 
     // Orologio: al secondo quando il conto mostra i secondi (ultime 24 ore),
     // altrimenti ogni 30 secondi, per cambiare fase anche a pagina aperta.

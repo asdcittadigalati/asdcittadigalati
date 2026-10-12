@@ -2,7 +2,7 @@
 // Cloudflare, con _headers e _redirects). Il Worker passa prima di tutto per
 // le pagine (redirect da http a https), per /auth e /callback (accesso al
 // pannello), per /api/classifica e /api/twitch (diretta: in onda o replica,
-// worker/twitch.mjs); immagini e script vanno dritti (vedi
+// worker/twitch.mjs), per /diretta (link corto al riquadro della diretta); immagini e script vanno dritti (vedi
 // run_worker_first in wrangler.jsonc). La logica OAuth e' in oauth/.
 import { avvia } from "../oauth/auth.mjs";
 import { completa } from "../oauth/callback.mjs";
@@ -59,6 +59,11 @@ export default {
     if (request.method === "GET" && pathname === "/callback") return completa(request, env);
     if (request.method === "GET" && pathname === "/api/classifica") return classifica(request, ctx);
     if (request.method === "GET" && pathname === "/api/twitch") return twitch(request, env, ctx);
+    // Link corto da dire a voce, scrivere nelle storie o stampare in un QR:
+    // porta dritto al riquadro della diretta in home.
+    if (request.method === "GET" && (pathname === "/diretta" || pathname === "/diretta/")) {
+      return Response.redirect(new URL("/#diretta", url).href, 302);
+    }
     return env.ASSETS.fetch(request);
   },
 };

@@ -51,6 +51,15 @@ function scartoRoma(t: number): number {
   return Date.UTC(v("year"), v("month") - 1, v("day"), v("hour"), v("minute"), v("second")) - Math.floor(t / 1000) * 1000;
 }
 
+// Testo del pulsante "Condividi la diretta" (menu di condivisione del
+// telefono o WhatsApp): titolo della partita e link corto /diretta.
+export function testoCondivisione(titolo: string, url: string): string {
+  const t = (titolo ?? "").trim();
+  return `Partita in diretta${t ? `: ${t}` : ""} 👉 ${url}`;
+}
+
+export const linkWhatsApp = (testo: string) => `https://wa.me/?text=${encodeURIComponent(testo)}`;
+
 // Link incollato o scritto a mano: senza "https://" il browser lo
 // tratterebbe come una pagina del sito (404).
 export function normalizzaLink(link: string): string {
