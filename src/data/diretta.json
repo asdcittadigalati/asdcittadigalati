@@ -2,5 +2,21 @@
   "attiva": false,
   "titolo": "Or.Sa. vs Città di Galati",
   "inizio": "2026-10-10T15:30:00+02:00",
-  "urlVideo": "https://www.twitch.tv/cittadigalati?sr=a"
+  "urlVideo": "https://www.twitch.tv/cittadigalati?sr=a",
+  "tabellino": {
+    "avversario": "",
+    "inCasa": true,
+    "nomeCortoNostro": "",
+    "nomeCortoAvversario": "",
+    "fuoriElenco": {
+      "nome": "",
+      "scudetto": ""
+    },
+    "golNostri": 0,
+    "golAvversari": 0,
+    "inizio1": "",
+    "fine1": "",
+    "inizio2": "",
+    "fine2": ""
+  }
 }

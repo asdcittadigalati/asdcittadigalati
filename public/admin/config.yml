@@ -330,7 +330,7 @@ collections:
             name: "attiva"
             widget: "boolean"
             default: false
-            hint: "Acceso: il riquadro e' in home. SPENTO e salvato: il video sparisce dal sito in 4-5 minuti, quando vuoi (anche a partita appena finita). Con l'ora del fischio sparisce comunque da solo 7 giorni dopo; senza ora resta finche' non lo spegni."
+            hint: "Acceso: il riquadro e' in home. SPENTO e salvato: il video sparisce dal sito in 1-2 minuti, quando vuoi (anche a partita appena finita). Con l'ora del fischio sparisce comunque da solo 7 giorni dopo; senza ora resta finche' non lo spegni."
           - label: "Titolo"
             name: "titolo"
             widget: "string"
@@ -342,9 +342,94 @@ collections:
             # salvata con il fuso ("...T15:30:00+02:00"): letta giusta anche all'estero
             format: "YYYY-MM-DDTHH:mm:ssZ"
             required: false
-            hint: "Facoltativa. Se la metti: conto alla rovescia in home, all'ora indicata la diretta (per 3 ore), poi la replica, e dopo 7 giorni sparisce da sola. Se la lasci vuota: niente conto alla rovescia, il video compare appena salvi (4-5 minuti) con la scritta \"Guarda la partita\" e resta finche' non spegni l'interruttore qui sopra."
+            hint: "Facoltativa. Se la metti: conto alla rovescia in home, all'ora indicata la diretta (per 3 ore), poi la replica, e dopo 7 giorni sparisce da sola. Se la lasci vuota: niente conto alla rovescia, il video compare appena salvi (1-2 minuti) con la scritta \"Guarda la partita\" e resta finche' non spegni l'interruttore qui sopra."
           - label: "Link della diretta (YouTube, Twitch o Facebook)"
             name: "urlVideo"
             widget: "string"
             required: false
             hint: "YouTube: apri la diretta, Condividi, Copia link (resta valido anche come replica). Twitch: PRIMA della prima diretta, dal sito twitch.tv (non dall'app), attiva Impostazioni > Streaming > Archivia le trasmissioni passate, altrimenti la partita non viene salvata. Poi incolla il link del canale, per esempio https://www.twitch.tv/nomecanale; a partita finita, per rivederla qui, sostituiscilo con il link del video salvato (twitch.tv/videos/...), altrimenti sotto il riquadro c'e' il collegamento ai video del canale. Funziona anche un link di Facebook."
+          - label: "Tabellino (risultato e tempi)"
+            name: "tabellino"
+            widget: "object"
+            collapsed: false
+            hint: "La fascia col risultato sopra il video, come in Serie A. Compare quando salvi l'Inizio del 1° tempo. Il sito si aggiorna in circa 1-2 minuti; il minuto di gioco scorre da solo. PRIMA DI OGNI PARTITA: avversario, gol a 0 e i quattro orari svuotati con Clear."
+            fields:
+              - label: "Avversario"
+                name: "avversario"
+                widget: "select"
+                required: false
+                hint: "Nome e scudetto arrivano da soli. Se non e' in elenco (coppa, amichevole) scegli l'ultima voce e compila 'Squadra fuori elenco'."
+                options:
+                  - { label: "Città Di Sant'Angelo", value: "1207601" }
+                  - { label: "Club Sportivo Oliveri", value: "1170703" }
+                  - { label: "Ludica Lipari", value: "1043806" }
+                  - { label: "Mazzarrà Calcio", value: "920357" }
+                  - { label: "Melas", value: "933619" }
+                  - { label: "OR.SA.", value: "740525" }
+                  - { label: "Patti Calcio", value: "1282009" }
+                  - { label: "Polisportiva Torrenovese 1971", value: "1170704" }
+                  - { label: "Rocca 2023", value: "1207603" }
+                  - { label: "San Benedetto Calcio San Fratello", value: "1207604" }
+                  - { label: "San Pier Niceto", value: "1209760" }
+                  - { label: "Tortorici", value: "1026407" }
+                  - { label: "Altra squadra (compila 'Squadra fuori elenco')", value: "altra" }
+              - label: "Giochiamo in casa"
+                name: "inCasa"
+                widget: "boolean"
+                default: true
+                hint: "Acceso: noi a sinistra, come la squadra di casa. Spento: in trasferta, noi a destra."
+              - label: "Nome corto nostro (facoltativo)"
+                name: "nomeCortoNostro"
+                widget: "string"
+                required: false
+                hint: "Vuoto: il nome di Tuttocampo. Scrivilo se lo vuoi piu' breve nel tabellino."
+              - label: "Nome corto avversario (facoltativo)"
+                name: "nomeCortoAvversario"
+                widget: "string"
+                required: false
+                hint: "Vuoto: il nome di Tuttocampo."
+              - label: "Squadra fuori elenco (coppa, amichevoli)"
+                name: "fuoriElenco"
+                widget: "object"
+                collapsed: true
+                fields:
+                  - { label: "Nome", name: "nome", widget: "string", required: false }
+                  - { label: "Scudetto", name: "scudetto", widget: "image", required: false, hint: "Carica lo stemma dal telefono. Si usa solo se in Avversario hai scelto 'Altra squadra'." }
+              - label: "Gol nostri"
+                name: "golNostri"
+                widget: "number"
+                value_type: "int"
+                min: 0
+                max: 99
+                default: 0
+              - label: "Gol avversari"
+                name: "golAvversari"
+                widget: "number"
+                value_type: "int"
+                min: 0
+                max: 99
+                default: 0
+              - label: "Inizio 1° tempo"
+                name: "inizio1"
+                widget: "datetime"
+                format: "YYYY-MM-DDTHH:mm:ssZ"
+                required: false
+                hint: "Al fischio d'inizio tocca Now, poi Save. Fa comparire il tabellino."
+              - label: "Fine 1° tempo"
+                name: "fine1"
+                widget: "datetime"
+                format: "YYYY-MM-DDTHH:mm:ssZ"
+                required: false
+                hint: "Now, poi Save: mostra Intervallo. Il recupero (45+2') si conta da solo fino a qui."
+              - label: "Inizio 2° tempo"
+                name: "inizio2"
+                widget: "datetime"
+                format: "YYYY-MM-DDTHH:mm:ssZ"
+                required: false
+                hint: "Now, poi Save: il minuto riparte da 46."
+              - label: "Fine 2° tempo"
+                name: "fine2"
+                widget: "datetime"
+                format: "YYYY-MM-DDTHH:mm:ssZ"
+                required: false
+                hint: "Now, poi Save: mostra Finale, che resta anche sotto la replica. Se te lo dimentichi compare da solo dopo 75 minuti dall'inizio del 2° tempo."
