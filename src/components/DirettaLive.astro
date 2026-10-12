@@ -180,6 +180,9 @@ const tabellino = datiTabellino(diretta, squadre);
      16:9 il piu' grande possibile, fascia sopra o, su schermi molto larghi,
      di lato. .steso = schermo intero simulato dove il browser non lo permette
      (iPhone). */
+  /* Sopra i livelli decorativi della pagina (body::before/after, z-index 1),
+     che altrimenti velerebbero il player: Twitch non vuole niente sopra. */
+  .tv { position: relative; z-index: 2; }
   .tv:fullscreen,
   .tv.steso {
     display: flex;
@@ -193,8 +196,8 @@ const tabellino = datiTabellino(diretta, squadre);
     height: 100dvh;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  .tv:fullscreen [data-video],
-  .tv.steso [data-video] {
+  .tv:fullscreen [data-video]:not([hidden]),
+  .tv.steso [data-video]:not([hidden]) {
     flex: 1;
     min-width: 0;
     min-height: 0;

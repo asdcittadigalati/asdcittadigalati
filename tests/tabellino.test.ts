@@ -39,6 +39,14 @@ describe("statoTabellino: fasi e minuto", () => {
   it("un orario precedente al tempo prima viene ignorato", () => {
     expect(statoTabellino({ inizio1: t(10), fine1: t(5) }, FISCHIO, a(20))?.fase).toBe("1T");
   });
+  it("una fine nello stesso minuto dell'inizio dello stesso tempo e' un tocco sbagliato", () => {
+    // Now su "Fine 1° tempo" per sbaglio, poi Now su "Inizio 1° tempo" nello stesso minuto
+    expect(statoTabellino({ inizio1: t(0), fine1: t(0) }, FISCHIO, a(9))?.etichetta).toBe("10'");
+    expect(statoTabellino({ inizio1: t(0), fine1: t(48), inizio2: t(63), fine2: t(63) }, FISCHIO, a(70))?.etichetta).toBe("53'");
+  });
+  it("inizio del 2° tempo nello stesso minuto della fine del 1°: vale", () => {
+    expect(statoTabellino({ inizio1: t(0), fine1: t(48), inizio2: t(48) }, FISCHIO, a(50))?.etichetta).toBe("48'");
+  });
   it("fine dimenticata: FINALE da solo", () => {
     expect(statoTabellino({ inizio1: t(0), fine1: t(48), inizio2: t(63) }, FISCHIO, a(63 + 76))?.fase).toBe("finale");
     expect(statoTabellino({ inizio1: t(0) }, FISCHIO, a(181))?.fase).toBe("finale");
@@ -61,11 +69,18 @@ describe("statoTabellino: orari della partita precedente", () => {
     expect(statoTabellino({ inizio1: t(-181) }, FISCHIO, a(-170))).toBeNull();
     expect(statoTabellino({ inizio1: t(12 * 60 + 1) }, FISCHIO, a(12 * 60 + 2))).toBeNull();
   });
-  it("senza ora del fischio contano solo gli ultimi 7 giorni", () => {
+  it("senza ora del fischio contano solo le ultime 48 ore", () => {
     const ora = new Date("2026-10-18T14:00:00Z");
     expect(statoTabellino({ inizio1: "2026-10-18T13:30:00Z" }, null, ora)?.fase).toBe("1T");
-    expect(statoTabellino({ inizio1: "2026-10-10T13:30:00Z", fine2: "2026-10-10T15:20:00Z" }, null, ora)).toBeNull();
+    expect(statoTabellino({ inizio1: "2026-10-16T14:30:00Z", fine2: "2026-10-16T16:20:00Z" }, null, ora)?.fase).toBe("finale");
+    expect(statoTabellino({ inizio1: "2026-10-16T13:30:00Z", fine2: "2026-10-16T15:20:00Z" }, null, ora)).toBeNull();
     expect(statoTabellino({ inizio1: "2026-10-18T13:30:00Z" }, new Date("non valida"), ora)?.fase).toBe("1T");
+  });
+  it("senza ora del fischio la partita della settimana prima non finisce sulla nuova", () => {
+    // domenica scorsa 15:31, oggi la diretta parte alle 15:20: meno di 7 giorni
+    const tempi = { inizio1: "2026-10-11T15:31:00+02:00", fine1: "2026-10-11T16:18:00+02:00", inizio2: "2026-10-11T16:33:00+02:00", fine2: "2026-10-11T17:21:00+02:00" };
+    expect(statoTabellino(tempi, null, new Date("2026-10-18T15:20:00+02:00"))).toBeNull();
+    expect(statoTabellino(tempi, null, new Date("2026-10-17T15:30:00+02:00"))).toBeNull();
   });
 });
 

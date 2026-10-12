@@ -51,6 +51,16 @@ const { dati } = Astro.props;
     text-align: left;
   }
   .tabellino[hidden] { display: none; }
+  /* Senza risultato (tabellino non compilato) resta solo il pulsante dello
+     schermo intero, a destra: per Twitch e' l'unico. */
+  .tabellino.vuota:not([hidden]) {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.35rem 0;
+    background: none;
+    border-top: 0;
+  }
+  .tabellino.vuota > :not(.pieno) { display: none; }
   .squadra { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
   .ospiti { justify-content: flex-end; text-align: right; }
   .squadra img {
@@ -103,6 +113,7 @@ const { dati } = Astro.props;
     color: var(--text);
     cursor: pointer;
   }
+  .pieno[hidden] { display: none; }
   .pieno:hover, .pieno:focus-visible { border-color: var(--giallo); color: var(--giallo); }
 
   /* Telefono stretto: squadre e punteggio sopra, minuto e pulsante sotto. */
@@ -126,6 +137,7 @@ const { dati } = Astro.props;
       gap: 0.6rem;
       border-top: 0;
       border-right: 3px solid var(--rosso);
+      overflow: hidden;
     }
     :global(.tv:fullscreen) .nome,
     :global(.tv.steso) .nome { display: none; }
@@ -133,6 +145,18 @@ const { dati } = Astro.props;
     :global(.tv.steso) .tempo,
     :global(.tv:fullscreen) .pieno,
     :global(.tv.steso) .pieno { grid-column: auto; justify-self: center; }
+    /* "INTERVALLO" non deve uscire dalla colonna (finirebbe sopra il video). */
+    :global(.tv:fullscreen) .tempo,
+    :global(.tv.steso) .tempo {
+      flex-direction: column;
+      gap: 0;
+      max-width: 100%;
+      padding: 0.2rem 0.25rem;
+      font-size: 0.65rem;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      text-align: center;
+    }
   }
 </style>
 
@@ -145,6 +169,25 @@ const { dati } = Astro.props;
     let dati: DatiTabellino | null = null;
     try { dati = JSON.parse(el.dataset.tabellino ?? "null"); } catch { dati = null; }
 
+    // Schermo intero del contenitore (fascia + video): vero dove il browser lo
+    // permette, "steso" sulla pagina dove no (iPhone).
+    const tv = el.closest<HTMLElement>("[data-tv]");
+    const pieno = el.querySelector<HTMLButtonElement>("[data-pieno]");
+    const aSchermoIntero = () => Boolean(tv && (document.fullscreenElement === tv || tv.classList.contains("steso")));
+    const segna = (acceso: boolean) => {
+      pieno?.setAttribute("aria-pressed", String(acceso));
+      pieno?.setAttribute("aria-label", acceso ? "Esci dallo schermo intero" : "Schermo intero con il risultato");
+    };
+    const stendi = (si: boolean) => {
+      tv?.classList.toggle("steso", si);
+      document.documentElement.classList.toggle("tv-stesa", si);
+      segna(si);
+    };
+    const esci = () => {
+      if (document.fullscreenElement === tv) void document.exitFullscreen();
+      if (tv?.classList.contains("steso")) stendi(false);
+    };
+
     // Cambia il testo solo se diverso: niente annunci inutili ai lettori di schermo.
     const metti = (selettore: string, testo: string) => {
       const n = el.querySelector<HTMLElement>(selettore);
@@ -153,7 +196,16 @@ const { dati } = Astro.props;
 
     const disegna = () => {
       const stato = dati?.attiva ? statoTabellino(dati.tempi, inizioDa(dati.fischio), new Date()) : null;
-      el.hidden = !stato;
+      // Il pulsante dello schermo intero serve finche' c'e' il video, anche
+      // senza risultato: per Twitch e' l'unico (il riproduttore non ha il suo).
+      const video = tv?.querySelector<HTMLElement>("[data-video]");
+      const conVideo = Boolean(tv && video && !video.hidden && tv.getClientRects().length > 0);
+      if (pieno) pieno.hidden = !conVideo;
+      el.hidden = !stato && !conVideo;
+      el.classList.toggle("vuota", !stato);
+      // Video o riquadro spariti (diretta spenta, replica senza video) mentre si
+      // guarda a schermo intero: si esce, altrimenti la pagina resta bloccata.
+      if (!conVideo && aSchermoIntero()) esci();
       if (!dati || !stato) return;
       for (const lato of ["casa", "ospiti"] as const) {
         metti(`[data-nome="${lato}"]`, dati[lato].nome);
@@ -184,22 +236,15 @@ const { dati } = Astro.props;
       if (!document.hidden) { disegna(); void aggiorna(); }
     });
 
-    // Schermo intero del contenitore (fascia + video).
-    const tv = el.closest<HTMLElement>("[data-tv]");
-    const pieno = el.querySelector<HTMLButtonElement>("[data-pieno]");
     if (tv && pieno) {
-      const segna = (acceso: boolean) => {
-        pieno.setAttribute("aria-pressed", String(acceso));
-        pieno.setAttribute("aria-label", acceso ? "Esci dallo schermo intero" : "Schermo intero con il risultato");
-      };
-      const stendi = (si: boolean) => {
-        tv.classList.toggle("steso", si);
-        document.documentElement.classList.toggle("tv-stesa", si);
-        segna(si);
-      };
+      // A schermo intero si guarda la partita: l'audio della pagina (l'inno su
+      // Longi) si ferma e non riparte finche' non si esce.
+      document.addEventListener("play", (e) => {
+        if (aSchermoIntero() && e.target instanceof HTMLAudioElement) e.target.pause();
+      }, true);
       pieno.addEventListener("click", () => {
-        if (document.fullscreenElement) { void document.exitFullscreen(); return; }
-        if (tv.classList.contains("steso")) { stendi(false); return; }
+        if (aSchermoIntero()) { esci(); return; }
+        document.querySelectorAll("audio").forEach((a) => a.pause());
         if (document.fullscreenEnabled && typeof tv.requestFullscreen === "function") {
           tv.requestFullscreen().catch(() => stendi(true));
         } else {

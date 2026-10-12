@@ -57,8 +57,8 @@ I quattro campi di oggi (`attiva`, `titolo`, `inizio`, `urlVideo`) restano dove 
 | + `fine2` | finale | `FINALE` |
 
 Regole:
-- Conta l'ultimo orario compilato nell'ordine `inizio1 → fine1 → inizio2 → fine2`: un tocco dimenticato in mezzo non blocca (Inizio 2° tempo senza Fine 1° tempo → 2T; Fine 2° tempo senza Inizio 2° tempo → FINALE). Senza `inizio1` niente fascia. Un orario precedente all'ultimo valido che lo precede è ignorato, come se vuoto.
-- **Dati vecchi ignorati**: con l'ora del fischio, `inizio1` conta solo tra fischio − 3 h e fischio + 12 h. Senza ora del fischio, solo se negli ultimi 7 giorni. Così gli orari della partita precedente non compaiono sulla nuova.
+- Conta l'ultimo orario compilato nell'ordine `inizio1 → fine1 → inizio2 → fine2`: un tocco dimenticato in mezzo non blocca (Inizio 2° tempo senza Fine 1° tempo → 2T; Fine 2° tempo senza Inizio 2° tempo → FINALE). Senza `inizio1` niente fascia. Un orario precedente all'ultimo valido che lo precede è ignorato, come se vuoto; una fine nello stesso minuto del suo inizio pure (tocco sul campo sbagliato), mentre l'inizio del 2° tempo può cadere nel minuto della fine del 1°.
+- **Dati vecchi ignorati**: con l'ora del fischio, `inizio1` conta solo tra fischio − 3 h e fischio + 12 h. Senza ora del fischio, solo se delle ultime 48 ore (meno dei giorni fra due partite; prezzo: senza ora la scritta Finale sparisce dalla replica dopo due giorni). Così gli orari della partita precedente non compaiono sulla nuova.
 - **Fine dimenticata**: se manca `fine2` e da `inizio2` sono passati più di 75 minuti (o da `inizio1` più di 3 ore), si mostra `FINALE`.
 - Il minuto si calcola nel browser dall'orario salvato, quindi è giusto anche se il sito si aggiorna 1-2 minuti dopo (scarto massimo un minuto, per i secondi a :00).
 - Funzioni per i nomi e gli scudetti: `squadreDelTabellino(dati, elenco)` → `{ casa, ospiti }` con nome e scudetto, ordinati secondo `inCasa`. Avversario vuoto → nome "Avversari" e scudetto generico (silhouette).
@@ -68,7 +68,8 @@ Regole:
 In `DirettaLive.astro` il blocco video diventa un contenitore "tv" con due figli: la fascia `Tabellino` e il riquadro `EmbedConsenso` di oggi. La fascia:
 - è disegnata in build dai dati del pannello (niente salto alla prima visualizzazione) ed è nascosta finché `statoTabellino` è `null`;
 - si vede nelle fasi in onda, replica e senza ora; mai durante il conto alla rovescia;
-- mostra: scudetto + nome casa, punteggio, nome + scudetto ospiti, fase/minuto, pulsante "Schermo intero";
+- mostra: scudetto + nome casa, punteggio, nome + scudetto ospiti, fase/minuto, pulsante "Schermo intero"; senza risultato (tabellino non compilato) resta il solo pulsante, finché c'è il video: per Twitch è l'unico schermo intero;
+- se il video o il riquadro spariscono mentre si è a schermo intero, si esce da solo; a schermo intero l'audio della pagina (inno di Longi) si ferma;
 - è nei colori del sito (Galati rosso/giallo, Longi rossoblù/oro), con caratteri del sito; non imita l'interfaccia di Twitch.
 
 **Aggiornamento a pagina aperta**: in build si genera `/tabellino.json` (endpoint Astro prerenderizzato, solo i dati del tabellino già risolti: nomi, scudetti, gol, tempi). Il browser lo richiede ogni 20 s **solo** con la pagina visibile e intorno alla partita (da 3 ore prima a 12 ore dopo il fischio; senza ora del fischio sempre), poi ridisegna; il minuto scorre ogni secondo in locale. `"!/tabellino.json"` va aggiunto alle esclusioni di `run_worker_first` in `wrangler.jsonc`, così i controlli non passano dal Worker e non consumano richieste.

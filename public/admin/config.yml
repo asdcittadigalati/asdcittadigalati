@@ -352,7 +352,7 @@ collections:
             name: "tabellino"
             widget: "object"
             collapsed: false
-            hint: "La fascia col risultato sopra il video, come in Serie A. Compare quando salvi l'Inizio del 1° tempo. Il sito si aggiorna in circa 1-2 minuti; il minuto di gioco scorre da solo. PRIMA DI OGNI PARTITA: avversario, gol a 0 e i quattro orari svuotati con Clear."
+            hint: "La fascia col risultato sopra il video, come in Serie A. Compare quando salvi l'Inizio del 1° tempo. Il sito si aggiorna in circa 1-2 minuti; il minuto di gioco scorre da solo. PRIMA DI OGNI PARTITA: scegli l'avversario, controlla In casa e il nome corto avversario (restano quelli della partita prima), gol a 0 e i quattro orari svuotati con Clear."
             fields:
               - label: "Avversario"
                 name: "avversario"
@@ -387,7 +387,7 @@ collections:
                 name: "nomeCortoAvversario"
                 widget: "string"
                 required: false
-                hint: "Vuoto: il nome di Tuttocampo."
+                hint: "Vuoto: il nome di Tuttocampo. Resta salvato: alla partita dopo svuotalo o cambialo, altrimenti finisce accanto allo scudetto della nuova squadra."
               - label: "Squadra fuori elenco (coppa, amichevoli)"
                 name: "fuoriElenco"
                 widget: "object"

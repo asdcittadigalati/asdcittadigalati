@@ -39,6 +39,10 @@ describe("pannello e sito: tabellino", () => {
     expect(diretta.tabellino.golAvversari).toBe(0);
     expect(Object.keys(diretta)).toEqual(expect.arrayContaining(["attiva", "titolo", "inizio", "urlVideo", "tabellino"]));
   });
+  it("il promemoria di inizio partita ricorda tutto quello che resta dalla partita prima", () => {
+    const hint = (tabellino as Campo & { hint?: string }).hint ?? "";
+    for (const voce of ["avversario", "In casa", "nome corto avversario", "gol a 0", "Clear"]) expect(hint).toContain(voce);
+  });
   it("niente opzioni dei datetime che bloccano Sveltia 0.129", () => {
     const testo = readFileSync("public/admin/config.yml", "utf8");
     expect(testo).not.toMatch(/date_format|time_format|picker_utc/);

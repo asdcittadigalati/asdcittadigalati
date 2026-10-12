@@ -7,7 +7,7 @@
 // non si scrive mai: il browser lo conta dall'orario salvato, quindi resta
 // giusto anche se il sito si aggiorna un paio di minuti dopo il salvataggio.
 // Il recupero esce da solo (45+2') finche' non si salva la fine del tempo.
-import { inizioDa, GIORNI_REPLICA } from "./diretta";
+import { inizioDa } from "./diretta";
 
 export interface Tempi {
   inizio1?: string;
@@ -63,7 +63,6 @@ export const SCUDETTO_GENERICO = "/img/scudetti/generico.svg";
 
 const MINUTO = 60_000;
 const ORA = 3_600_000;
-const GIORNO = 86_400_000;
 
 const istante = (valore?: string): number | null => {
   const t = inizioDa(valore ?? "").getTime();
@@ -79,20 +78,25 @@ export function statoTabellino(tempi: Tempi, fischio: Date | null, ora: Date): S
   const adesso = ora.getTime();
 
   // Orari rimasti dalla partita precedente: con l'ora del fischio contano solo
-  // vicino al fischio, senza ora solo se recenti. Cosi' non finiscono sulla nuova.
+  // vicino al fischio, senza ora solo se delle ultime 48 ore (meno dei giorni
+  // fra due partite, anche con un turno infrasettimanale). Cosi' non finiscono
+  // sulla nuova; il prezzo e' che senza ora la scritta Finale sparisce dalla
+  // replica dopo due giorni.
   if (valida(fischio)) {
     const f = fischio.getTime();
     if (i1 < f - 3 * ORA || i1 > f + 12 * ORA) return null;
-  } else if (i1 < adesso - GIORNI_REPLICA * GIORNO) return null;
+  } else if (i1 < adesso - 48 * ORA) return null;
 
   // Conta l'ultimo orario compilato nell'ordine: un tocco dimenticato in mezzo
   // non blocca; un orario prima di quello che lo precede e' un errore e si ignora.
+  // Una fine nello stesso minuto del suo inizio pure (Now toccato sul campo
+  // sbagliato); l'inizio del 2° tempo invece puo' cadere nel minuto della fine del 1°.
   let fase: FaseTabellino = "1T";
   let ultimo = i1;
   let i2: number | null = null;
   for (const [chiave, dopo] of [["fine1", "intervallo"], ["inizio2", "2T"], ["fine2", "finale"]] as const) {
     const t = istante(tempi[chiave]);
-    if (t === null || t < ultimo) continue;
+    if (t === null || t < ultimo || (chiave !== "inizio2" && t === ultimo)) continue;
     ultimo = t;
     fase = dopo;
     if (chiave === "inizio2") i2 = t;
