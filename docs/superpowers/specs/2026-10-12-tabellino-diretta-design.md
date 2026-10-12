@@ -71,7 +71,7 @@ In `DirettaLive.astro` il blocco video diventa un contenitore "tv" con due figli
 - mostra: scudetto + nome casa, punteggio, nome + scudetto ospiti, fase/minuto, pulsante "Schermo intero";
 - è nei colori del sito (Galati rosso/giallo, Longi rossoblù/oro), con caratteri del sito; non imita l'interfaccia di Twitch.
 
-**Aggiornamento a pagina aperta**: in build si genera `/tabellino.json` (endpoint Astro prerenderizzato, solo i dati del tabellino già risolti: nomi, scudetti, gol, tempi). Il browser lo richiede ogni 20 s **solo** con la pagina visibile e il riquadro nelle fasi "in onda" o "senza ora" (in replica basta il dato della pagina), poi ridisegna; il minuto scorre ogni secondo in locale. `"!/tabellino.json"` va aggiunto alle esclusioni di `run_worker_first` in `wrangler.jsonc`, così i controlli non passano dal Worker e non consumano richieste.
+**Aggiornamento a pagina aperta**: in build si genera `/tabellino.json` (endpoint Astro prerenderizzato, solo i dati del tabellino già risolti: nomi, scudetti, gol, tempi). Il browser lo richiede ogni 20 s **solo** con la pagina visibile e intorno alla partita (da 3 ore prima a 12 ore dopo il fischio; senza ora del fischio sempre), poi ridisegna; il minuto scorre ogni secondo in locale. `"!/tabellino.json"` va aggiunto alle esclusioni di `run_worker_first` in `wrangler.jsonc`, così i controlli non passano dal Worker e non consumano richieste.
 
 ## 6. Schermo intero
 
