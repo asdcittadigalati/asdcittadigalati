@@ -210,7 +210,9 @@ const tabellino = datiTabellino(diretta, squadre);
     aspect-ratio: 16 / 9;
   }
   .tv:fullscreen :global(.embed iframe),
-  .tv.steso :global(.embed iframe) {
+  .tv.steso :global(.embed iframe),
+  .tv:fullscreen :global(.embed-blocco),
+  .tv.steso :global(.embed-blocco) {
     height: 100%;
     min-height: 0;
   }
