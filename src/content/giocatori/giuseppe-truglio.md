@@ -1,5 +1,5 @@
 ---
-nome: Giuseppe Truglio
+nome: Truglio Giuseppe
 ruolo: Difensore
 numero: 2
 foto: /img/uploads/giuseppe-truglio.webp
