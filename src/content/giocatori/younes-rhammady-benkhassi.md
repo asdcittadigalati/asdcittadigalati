@@ -1,5 +1,5 @@
 ---
-nome: Younes Rhammady Benkhassi
+nome: Rhammady Benkhassi Younes
 ruolo: Attaccante
 numero: 7
 foto: /img/uploads/younes-rhammady-benkhassi.webp
