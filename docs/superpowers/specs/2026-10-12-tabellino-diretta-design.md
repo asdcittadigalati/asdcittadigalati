@@ -68,7 +68,7 @@ Regole:
 In `DirettaLive.astro` il blocco video diventa un contenitore "tv" con due figli: la fascia `Tabellino` e il riquadro `EmbedConsenso` di oggi. La fascia:
 - è disegnata in build dai dati del pannello (niente salto alla prima visualizzazione) ed è nascosta finché `statoTabellino` è `null`;
 - si vede nelle fasi in onda, replica e senza ora; mai durante il conto alla rovescia;
-- mostra: scudetto + nome casa, punteggio, nome + scudetto ospiti, fase/minuto, pulsante "Schermo intero"; senza risultato (tabellino non compilato) resta il solo pulsante, finché c'è il video: per Twitch è l'unico schermo intero;
+- mostra: scudetto + nome casa, punteggio, nome + scudetto ospiti, fase/minuto, pulsante "Schermo intero"; senza risultato (tabellino non compilato) la fascia non c'è: il video sta da solo, come se il tabellino non esistesse (a Twitch si ridà il suo schermo intero, vedi sezione 6);
 - se il video o il riquadro spariscono mentre si è a schermo intero, si esce da solo; a schermo intero l'audio della pagina (inno di Longi) si ferma;
 - è nei colori del sito (Galati rosso/giallo, Longi rossoblù/oro), con caratteri del sito; non imita l'interfaccia di Twitch.
 
@@ -79,7 +79,7 @@ In `DirettaLive.astro` il blocco video diventa un contenitore "tv" con due figli
 - Pulsante nella fascia. Dove esiste (`document.fullscreenEnabled` e `requestFullscreen` sul contenitore: desktop, Android, iPad) mette a schermo intero il contenitore "tv" (fascia + iframe), senza spostare l'iframe nel DOM.
 - Dove non esiste (iPhone): il contenitore passa a una classe che lo stende su tutta la pagina (`position: fixed; inset: 0; height: 100dvh`, fondo nero, margini `env(safe-area-inset-*)`), con pulsante "Esci" ed Esc. Le barre di Safari possono restare in parte; la rotazione la fa chi guarda.
 - Disposizione a schermo intero: video 16:9 il più grande possibile; fascia sopra. Se lo schermo è abbastanza più largo del 16:9 (telefono in orizzontale), fascia verticale in una banda laterale, fuori dal video.
-- **Pulsante schermo intero interno di Twitch**: per l'iframe Twitch si tolgono l'attributo `allowfullscreen` e `fullscreen` da `allow` (attributo documentato da Twitch come facoltativo): così l'unico schermo intero è il nostro, col tabellino. YouTube e Facebook restano come oggi.
+- **Pulsante schermo intero interno di Twitch**: per l'iframe Twitch si tolgono l'attributo `allowfullscreen` e `fullscreen` da `allow` (attributo documentato da Twitch come facoltativo): così l'unico schermo intero è il nostro, col tabellino. YouTube e Facebook restano come oggi. Senza tabellino (fascia nascosta) a pagina appena aperta i permessi tornano e il player Twitch ha il suo schermo intero; se il risultato arriva a pagina aperta non si torna indietro (si ricaricherebbe la diretta).
 - Da verificare su iPhone reale: se il player Twitch ripiega comunque sullo schermo intero nativo del video (che mostrerebbe solo il video). Se succede, prova successiva con il parametro `allowfullscreen=false` nell'URL del player (presente nel codice di Twitch ma non documentato); altrimenti si accetta e chi guarda usa il nostro pulsante.
 
 ## 7. Rischi accettati

@@ -51,16 +51,6 @@ const { dati } = Astro.props;
     text-align: left;
   }
   .tabellino[hidden] { display: none; }
-  /* Senza risultato (tabellino non compilato) resta solo il pulsante dello
-     schermo intero, a destra: per Twitch e' l'unico. */
-  .tabellino.vuota:not([hidden]) {
-    display: flex;
-    justify-content: flex-end;
-    padding: 0.35rem 0;
-    background: none;
-    border-top: 0;
-  }
-  .tabellino.vuota > :not(.pieno) { display: none; }
   .squadra { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
   .ospiti { justify-content: flex-end; text-align: right; }
   .squadra img {
@@ -194,18 +184,44 @@ const { dati } = Astro.props;
       if (n && n.textContent !== testo) n.textContent = testo;
     };
 
+    // Twitch non ha lo schermo intero suo: lo fa la fascia, che tiene visibile il
+    // risultato. Senza risultato la fascia non c'e' e il video sta da solo, quindi
+    // gli si ridanno i permessi. Un iframe gia' caricato li cambia solo
+    // ricaricandosi: lo si sostituisce, una volta, a pagina appena aperta. Se il
+    // risultato arriva dopo (partita che inizia a pagina aperta) non si torna
+    // indietro: ricaricherebbe la diretta in corso.
+    let nativo = false;
+    const schermoNativo = () => {
+      const embed = tv?.querySelector<HTMLElement>("[data-embed]");
+      if (nativo || !embed) return;
+      nativo = true;
+      const abilita = (f: HTMLIFrameElement) => {
+        f.setAttribute("allow", "autoplay; fullscreen; picture-in-picture; encrypted-media");
+        f.setAttribute("allowfullscreen", "");
+      };
+      const modello = embed.querySelector<HTMLTemplateElement>("template[data-embed-template]")?.content.querySelector("iframe");
+      if (modello && !modello.hasAttribute("allowfullscreen")) abilita(modello);
+      const caricato = embed.querySelector<HTMLIFrameElement>(":scope > iframe");
+      if (caricato && !caricato.hasAttribute("allowfullscreen")) {
+        const nuovo = caricato.cloneNode() as HTMLIFrameElement;
+        abilita(nuovo);
+        caricato.replaceWith(nuovo);
+      }
+    };
+
     const disegna = () => {
       const stato = dati?.attiva ? statoTabellino(dati.tempi, inizioDa(dati.fischio), new Date()) : null;
-      // Il pulsante dello schermo intero serve finche' c'e' il video, anche
-      // senza risultato: per Twitch e' l'unico (il riproduttore non ha il suo).
+      // Senza risultato niente fascia: il video sta da solo, come se il
+      // tabellino non esistesse.
       const video = tv?.querySelector<HTMLElement>("[data-video]");
       const conVideo = Boolean(tv && video && !video.hidden && tv.getClientRects().length > 0);
       if (pieno) pieno.hidden = !conVideo;
-      el.hidden = !stato && !conVideo;
-      el.classList.toggle("vuota", !stato);
-      // Video o riquadro spariti (diretta spenta, replica senza video) mentre si
-      // guarda a schermo intero: si esce, altrimenti la pagina resta bloccata.
-      if (!conVideo && aSchermoIntero()) esci();
+      el.hidden = !stato;
+      if (!stato) schermoNativo();
+      // Video o riquadro spariti (diretta spenta, replica senza video), o fascia
+      // sparita (il suo pulsante e' l'unica uscita sull'iPhone), mentre si guarda
+      // a schermo intero: si esce, altrimenti la pagina resta bloccata.
+      if ((!conVideo || !stato) && aSchermoIntero()) esci();
       if (!dati || !stato) return;
       for (const lato of ["casa", "ospiti"] as const) {
         metti(`[data-nome="${lato}"]`, dati[lato].nome);
