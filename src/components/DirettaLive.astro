@@ -26,7 +26,10 @@ const urlVideo = normalizzaLink(diretta.urlVideo ?? "");
 // resta acceso.
 const inizio = inizioDa(diretta.inizio ?? "");
 const senzaOra = Number.isNaN(inizio.getTime());
-const attiva = mostraRiquadro(Boolean(diretta.attiva), inizio, urlVideo, new Date());
+// Scadenza (facoltativa): da quell'ora il riquadro sparisce, prima dei 7 giorni.
+const scadenza = inizioDa(diretta.scadenza ?? "");
+const conScadenza = !Number.isNaN(scadenza.getTime());
+const attiva = mostraRiquadro(Boolean(diretta.attiva), inizio, urlVideo, new Date(), scadenza);
 
 // Twitch vuole nel riproduttore tutti i domini da cui il sito si apre.
 const dominio = Astro.site?.hostname ?? "localhost";
@@ -43,6 +46,7 @@ const tabellino = datiTabellino(diretta, squadre);
     data-diretta
     data-inizio={senzaOra ? undefined : inizio.toISOString()}
     data-senza-ora={senzaOra ? "" : undefined}
+    data-scadenza={conScadenza ? scadenza.toISOString() : undefined}
     data-twitch-canale={video?.canaleTwitch}
     data-twitch-src={video?.canaleTwitch ? video.src : undefined}
     data-twitch-domini={video?.canaleTwitch ? domini.join(",") : undefined}
@@ -77,6 +81,12 @@ const tabellino = datiTabellino(diretta, squadre);
 
       {/* Dal fischio d'inizio in poi (diretta, poi replica); senza ora: subito */}
       <div class="live" data-live hidden={!senzaOra}>
+        {/* Canale Twitch con la diretta interrotta all'intervallo: i video salvati
+            sono due, qui compaiono i pulsanti per passare dall'uno all'altro (li
+            crea lo script, quando conosce i video). */}
+        {video?.canaleTwitch && (
+          <div class="parti" data-parti role="group" aria-label="Parte della partita" hidden></div>
+        )}
         <div class="tv" data-tv>
           <Tabellino dati={tabellino} />
           {video ? (
@@ -187,6 +197,29 @@ const tabellino = datiTabellino(diretta, squadre);
   .condividi button:hover,
   .condividi button:focus-visible { background: var(--giallo); color: var(--bg); }
   .live { margin-top: 1rem; }
+  .parti {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0 0 0.75rem;
+  }
+  .parti[hidden] { display: none; }
+  /* I pulsanti li crea lo script: senza :global non avrebbero lo stile. */
+  .parti :global(button) {
+    min-height: 44px;
+    background: none;
+    border: 1px solid var(--giallo);
+    color: var(--giallo);
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    padding: 0.4rem 1.1rem;
+    cursor: pointer;
+  }
+  .parti :global(button:hover),
+  .parti :global(button:focus-visible),
+  .parti :global(button[aria-pressed="true"]) { background: var(--giallo); color: var(--bg); }
   .senza-video { margin: 0; }
   .senza-video[hidden], [data-video][hidden] { display: none; }
   .sr-only {
@@ -253,7 +286,7 @@ const tabellino = datiTabellino(diretta, squadre);
 </style>
 
 <script>
-  import { fase, sceltaTwitch, srcVideoTwitch, testoCondivisione, linkWhatsApp, type SceltaTwitch } from "../lib/diretta";
+  import { fase, sceltaTwitch, srcVideoTwitch, etichettaParte, parteScelta, testoCondivisione, linkWhatsApp, type SceltaTwitch } from "../lib/diretta";
 
   // Stati del riquadro: "attesa" (conto alla rovescia), "in-onda", "replica",
   // "libera" (senza ora del fischio: video subito visibile). Con un canale
@@ -265,6 +298,7 @@ const tabellino = datiTabellino(diretta, squadre);
   if (box) {
     const senzaOra = box.hasAttribute("data-senza-ora");
     const inizio = senzaOra ? null : new Date(box.dataset.inizio ?? "");
+    const scadenza = box.dataset.scadenza ? new Date(box.dataset.scadenza) : null;
     const attesa = box.querySelector<HTMLElement>("[data-attesa]");
     const live = box.querySelector<HTMLElement>("[data-live]");
     const conto = box.querySelector<HTMLElement>("[data-conto]");
@@ -275,7 +309,10 @@ const tabellino = datiTabellino(diretta, squadre);
     const canale = box.dataset.twitchCanale;
     const srcCanale = box.dataset.twitchSrc ?? "";
     const domini = (box.dataset.twitchDomini ?? "").split(",").filter(Boolean);
+    const parti = box.querySelector<HTMLElement>("[data-parti]");
     let twitch: SceltaTwitch | null = null;
+    let scelta: string | null = null; // parte scelta da chi guarda la replica
+    let partiMostrate = "";
 
     const data = (opzioni: Intl.DateTimeFormatOptions) => inizio!.toLocaleString("it-IT", opzioni);
 
@@ -296,8 +333,32 @@ const tabellino = datiTabellino(diretta, squadre);
       }
     };
 
+    // Pulsanti delle parti (1° e 2° tempo): ricreati solo se i video cambiano, per
+    // non far perdere il fuoco a chi li sta usando; la parte in corso e' segnata.
+    const disegnaParti = (ids: string[]) => {
+      if (!parti) return;
+      parti.hidden = ids.length < 2;
+      const chiave = ids.join(",");
+      if (chiave !== partiMostrate) {
+        partiMostrate = chiave;
+        parti.replaceChildren(...ids.map((id, i) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.dataset.parte = id;
+          b.textContent = etichettaParte(i, ids.length);
+          b.addEventListener("click", () => { scelta = id; disegna(); });
+          return b;
+        }));
+      }
+      const attuale = ids.length ? parteScelta(ids, scelta) : "";
+      for (const b of parti.querySelectorAll<HTMLButtonElement>("button")) {
+        b.setAttribute("aria-pressed", String(b.dataset.parte === attuale));
+      }
+    };
+
     const disegna = () => {
       const ora = new Date();
+      if (scadenza && ora >= scadenza) { box.hidden = true; return; }
       const f = inizio ? fase(inizio, ora) : "libera";
       if (!f || f === "scaduta") { box.hidden = true; return; }
 
@@ -316,9 +377,8 @@ const tabellino = datiTabellino(diretta, squadre);
       let conLink = false;
       if (inDiretta) usaSrc(srcCanale);
       else if (salvato) {
-        usaSrc(srcVideoTwitch(salvato.id, domini));
-        // Diretta interrotta e ripresa: piu' video, il collegamento li mostra tutti.
-        conLink = salvato.altri && Boolean(replicaTwitch);
+        // Diretta interrotta e ripresa: piu' video, i pulsanti sotto li alternano.
+        usaSrc(srcVideoTwitch(parteScelta(salvato.ids, scelta), domini));
       } else {
         usaSrc(srcCanale);
         if (stato === "replica") {
@@ -339,6 +399,7 @@ const tabellino = datiTabellino(diretta, squadre);
       if (live) live.hidden = stato === "attesa";
       if (video) video.hidden = !conVideo;
       if (replicaTwitch) replicaTwitch.hidden = !conLink;
+      disegnaParti(salvato ? salvato.ids : []);
       if (etichetta) {
         etichetta.textContent =
           stato === "attesa" ? "Prossima diretta"
@@ -391,6 +452,9 @@ const tabellino = datiTabellino(diretta, squadre);
       const passo = () => (fase(inizio, new Date()) === "attesa" && inizio.getTime() - Date.now() < 86_400_000 ? 1000 : 30_000);
       const giro = () => { disegna(); if (fase(inizio, new Date()) !== "scaduta") setTimeout(giro, passo()); };
       setTimeout(giro, passo());
+    } else if (scadenza) {
+      // Senza ora del fischio non c'e' orologio: con la scadenza si controlla ogni 30 secondi.
+      setInterval(disegna, 30_000);
     }
 
     // Twitch: stato del canale ogni minuto (il Worker lo tiene in cache un

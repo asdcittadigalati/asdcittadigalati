@@ -76,8 +76,11 @@ export function normalizzaLink(link: string): string {
 // Il riquadro va in pagina? Con l'ora del fischio: fino a 7 giorni dopo.
 // Senza ora (facoltativa: c'e' chi lancia la diretta a partita iniziata):
 // solo se c'e' un link, e resta finche' non si spegne l'interruttore.
-export function mostraRiquadro(attiva: boolean, inizio: Date, link: string, ora: Date): boolean {
+// La scadenza (facoltativa, stessa forma dell'ora del fischio) vince su tutto:
+// da quell'ora il riquadro sparisce, anche prima dei 7 giorni.
+export function mostraRiquadro(attiva: boolean, inizio: Date, link: string, ora: Date, scadenza?: Date): boolean {
   if (!attiva) return false;
+  if (scadenza && ora.getTime() >= scadenza.getTime()) return false;
   if (Number.isNaN(inizio.getTime())) return Boolean(link.trim());
   return fase(inizio, ora) !== "scaduta";
 }
@@ -110,13 +113,14 @@ export interface StatoTwitch {
   live: boolean;
   video: { id: string; creato: string }[];
 }
-// "altri": piu' video della stessa partita (diretta interrotta e ripresa).
-export type SceltaTwitch = { modo: "canale" } | { modo: "video"; id: string; altri: boolean } | { modo: "nessuno" };
+// "ids": i video salvati della partita, dal primo all'ultimo. Piu' di uno
+// quando la diretta e' stata interrotta e ripresa (all'intervallo).
+export type SceltaTwitch = { modo: "canale" } | { modo: "video"; ids: string[] } | { modo: "nessuno" };
 
-// Cosa mostrare per un canale Twitch: in diretta il canale; altrimenti il
-// video salvato della partita, cioe' il piu' recente nato tra 3 ore prima e
-// 12 ore dopo il fischio d'inizio (senza ora: negli ultimi 7 giorni). Cosi'
-// un vecchio video di un'altra partita non passa per la replica di questa.
+// Cosa mostrare per un canale Twitch: in diretta il canale; altrimenti i
+// video salvati della partita, cioe' quelli nati tra 3 ore prima e 12 ore dopo
+// il fischio d'inizio (senza ora: negli ultimi 7 giorni), in ordine di inizio.
+// Cosi' un vecchio video di un'altra partita non passa per la replica di questa.
 export function sceltaTwitch(stato: StatoTwitch, inizio: Date | null, ora: Date): SceltaTwitch {
   if (stato.live) return { modo: "canale" };
   const conOra = inizio && !Number.isNaN(inizio.getTime());
@@ -125,8 +129,31 @@ export function sceltaTwitch(stato: StatoTwitch, inizio: Date | null, ora: Date)
   const buoni = (stato.video ?? [])
     .map((v) => ({ id: String(v.id), t: Date.parse(v.creato) }))
     .filter((v) => /^\d+$/.test(v.id) && v.t >= da && v.t <= a)
-    .sort((x, y) => y.t - x.t);
-  return buoni.length ? { modo: "video", id: buoni[0].id, altri: buoni.length > 1 } : { modo: "nessuno" };
+    .sort((x, y) => x.t - y.t);
+  // Senza ora la finestra (7 giorni) puo' contenere piu' partite: vale solo
+  // l'ultimo gruppo di video nati a meno di ORE_IN_ONDA ore l'uno dall'altro
+  // (i due tempi), non le dirette dei giorni prima. Con l'ora la finestra e'
+  // gia' quella della partita.
+  let primo = 0;
+  if (!conOra) {
+    primo = buoni.length - 1;
+    while (primo > 0 && buoni[primo].t - buoni[primo - 1].t <= ORE_IN_ONDA * 3600_000) primo--;
+  }
+  const partita = buoni.slice(Math.max(primo, 0));
+  return partita.length ? { modo: "video", ids: partita.map((v) => v.id) } : { modo: "nessuno" };
+}
+
+// Scritta del pulsante di una parte: con due video sono i due tempi, con altri
+// numeri (un video di prova prima del fischio, tre interruzioni) "Parte N".
+export function etichettaParte(indice: number, totale: number): string {
+  return totale === 2 ? `${indice + 1}° tempo` : `Parte ${indice + 1}`;
+}
+
+// Quale parte sta guardando chi ha scelto: la sua, finche' il video c'e'
+// ancora fra quelli noti, altrimenti la prima. Il controllo ogni minuto non
+// deve riportarlo all'inizio.
+export function parteScelta(ids: string[], scelta: string | null): string {
+  return scelta && ids.includes(scelta) ? scelta : ids[0];
 }
 
 // Percorsi di twitch.tv che non sono nomi di canale.

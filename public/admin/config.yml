@@ -343,6 +343,12 @@ collections:
             format: "YYYY-MM-DDTHH:mm:ssZ"
             required: false
             hint: "Facoltativa. Se la metti: conto alla rovescia in home, all'ora indicata la diretta (per 3 ore), poi la replica, e dopo 7 giorni sparisce da sola. Se la lasci vuota: niente conto alla rovescia, il video compare appena salvi (1-2 minuti) con la scritta \"Guarda la partita\" e resta finche' non spegni l'interruttore qui sopra."
+          - label: "Scadenza (facoltativa)"
+            name: "scadenza"
+            widget: "datetime"
+            format: "YYYY-MM-DDTHH:mm:ssZ"
+            required: false
+            hint: "Facoltativa. Da quest'ora il riquadro sparisce dal sito da solo, anche se non sono passati i 7 giorni dal fischio d'inizio. Vuota: vale la regola normale (7 giorni dopo il fischio d'inizio, o finche' non spegni l'interruttore)."
           - label: "Link della diretta (YouTube, Twitch o Facebook)"
             name: "urlVideo"
             widget: "string"
