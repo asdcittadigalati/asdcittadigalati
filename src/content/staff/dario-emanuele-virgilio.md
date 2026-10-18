@@ -1,5 +1,5 @@
 ---
-nome: Dario Emanuele Virgilio
+nome: Virgilio Dario Emanuele
 incarico: Dirigente
 sezione: Società
 ordine: 10
