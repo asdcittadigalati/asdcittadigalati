@@ -10,7 +10,9 @@ interface Props {
   date: Date;
 }
 const { link, date } = Astro.props;
-const post = await preparaPost(link);
+// Le clip Twitch vogliono i domini da cui il sito si apre (come DirettaLive).
+const dominio = Astro.site?.hostname ?? "localhost";
+const post = await preparaPost(link, fetch, [dominio, `www.${dominio}`, "localhost"]);
 const nome = NOME[post.piattaforma];
 const quando = date.toLocaleDateString("it-IT", { day: "numeric", month: "short", timeZone: "Europe/Rome" });
 ---
@@ -25,6 +27,7 @@ const quando = date.toLocaleDateString("it-IT", { day: "numeric", month: "short"
       servizio={nome}
       altezza={`${ALTEZZA[post.piattaforma]}px`}
       apri={link}
+      video={post.piattaforma === "twitch"}
       nota={`Il post è ospitato da ${nome}: per mostrarlo qui il browser deve collegarsi ai loro server, che possono registrare il tuo indirizzo IP e impostare cookie propri.`}
     />
   ) : (

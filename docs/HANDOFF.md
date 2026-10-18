@@ -51,8 +51,8 @@ Poi si entra da `/admin` con *Sign In with GitHub*.
 
 **Cosa si può gestire, e come**:
 
-- **Social**: link di un post pubblico di Instagram, Facebook o TikTok e
-  data (si compila da sola). Il post appare da solo in home (gli ultimi 3) e
+- **Social**: link di un post pubblico di Instagram, Facebook o TikTok, o di
+  una clip Twitch (non il canale né un video intero), e data (si compila da sola). Il post appare da solo in home (gli ultimi 3) e
   in `/social`; senza consenso privacy al suo posto c'è un segnaposto.
 - **Rosa**: nome, ruolo (Portiere / Difensore / Centrocampista / Attaccante),
   numero di maglia, foto. I giocatori compaiono in `/squadra` raggruppati per

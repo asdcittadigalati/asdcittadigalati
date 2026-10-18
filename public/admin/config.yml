@@ -31,7 +31,7 @@ collections:
   - name: "social"
     label: "Social"
     label_singular: "Post"
-    description: "Incolla il link di un post pubblico di Instagram, Facebook o TikTok: sul sito compare da solo, in home e nella pagina Social."
+    description: "Incolla il link di un post pubblico di Instagram, Facebook o TikTok, o di una clip Twitch: sul sito compare da solo, in home e nella pagina Social."
     folder: "src/content/social"
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{hour}}{{minute}}{{second}}"
@@ -44,8 +44,8 @@ collections:
         name: "link"
         widget: "string"
         required: true
-        hint: "Dal social: tocca Condividi (o i tre puntini) e poi Copia link, e incollalo qui. Il post deve essere pubblico: i profili privati e i post dentro i gruppi Facebook non si vedono. Facebook dal telefono: se sul sito il post compare solo come 'Apri il post', aprilo dal computer e copia l'indirizzo dalla barra in alto."
-        pattern: ["^https://([a-z]+\\.)?(instagram\\.com|facebook\\.com|fb\\.watch|tiktok\\.com)/\\S+$", "Serve un link di Instagram, Facebook o TikTok che inizi con https://"]
+        hint: "Dal social: tocca Condividi (o i tre puntini) e poi Copia link, e incollalo qui. Il post deve essere pubblico: i profili privati e i post dentro i gruppi Facebook non si vedono. Facebook dal telefono: se sul sito il post compare solo come 'Apri il post', aprilo dal computer e copia l'indirizzo dalla barra in alto. Twitch: apri la clip, tocca Condividi e copia il link (vale solo una clip, non il canale o un video intero)."
+        pattern: ["^https://([a-z]+\\.)?(instagram\\.com|facebook\\.com|fb\\.watch|tiktok\\.com|twitch\\.tv)/\\S+$", "Serve un link di Instagram, Facebook, TikTok o Twitch che inizi con https://"]
       - label: "Data"
         name: "date"
         widget: "datetime"

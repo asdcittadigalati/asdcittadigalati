@@ -6,17 +6,18 @@
 // usare, senza chiavi o account sviluppatore. Un link che non si riesce a
 // trasformare non rompe nulla: diventa una semplice scheda "Apri il post".
 
-export type Piattaforma = "instagram" | "facebook" | "tiktok";
+export type Piattaforma = "instagram" | "facebook" | "tiktok" | "twitch";
 export type Post = { piattaforma: Piattaforma | "altro"; link: string; src: string | null };
 
 // Altezze fisse dei riquadri: gli iframe non si adattano da soli al
 // contenuto. Tarate sui riquadri reali a larghezza colonna (~370px).
-export const ALTEZZA: Record<Piattaforma, number> = { instagram: 720, facebook: 620, tiktok: 760 };
+export const ALTEZZA: Record<Piattaforma, number> = { instagram: 720, facebook: 620, tiktok: 760, twitch: 240 };
 
 export const NOME: Record<Piattaforma | "altro", string> = {
   instagram: "Instagram",
   facebook: "Facebook",
   tiktok: "TikTok",
+  twitch: "Twitch",
   altro: "social",
 };
 
@@ -27,7 +28,12 @@ const dominio = (u: URL) => u.hostname.replace(/^(www|m|mobile|web)\./, "");
 const plugin = (tipo: "post" | "video", link: string) =>
   `https://www.facebook.com/plugins/${tipo}.php?href=${encodeURIComponent(link)}&show_text=true&width=350`;
 
-export function riconosci(link: string): Post {
+// Twitch vuole nel riproduttore tutti i domini da cui il sito si apre
+// (parametro "parent"), altrimenti il riquadro resta nero.
+const clipTwitch = (slug: string, domini: string[]) =>
+  `https://clips.twitch.tv/embed?${[`clip=${encodeURIComponent(slug)}`, ...domini.map((d) => `parent=${encodeURIComponent(d)}`), "autoplay=false"].join("&")}`;
+
+export function riconosci(link: string, domini: string[] = []): Post {
   let u: URL;
   try {
     u = new URL(link.trim());
@@ -47,6 +53,15 @@ export function riconosci(link: string): Post {
     return { piattaforma: "tiktok", link, src: m ? `https://www.tiktok.com/embed/v2/${m[1]}` : null };
   }
   if (h === "vm.tiktok.com" || h === "vt.tiktok.com") return { piattaforma: "tiktok", link, src: null };
+
+  // Solo le clip: clips.twitch.tv/NOME, twitch.tv/canale/clip/NOME o l'indirizzo
+  // gia' pronto per incorporare. Un canale o un video intero resta una scheda-link.
+  if (h === "clips.twitch.tv" || h === "twitch.tv") {
+    const parti = u.pathname.split("/").filter(Boolean);
+    const slug =
+      h === "clips.twitch.tv" ? (parti[0] === "embed" ? u.searchParams.get("clip") : parti[0]) : parti[1] === "clip" ? parti[2] : undefined;
+    return { piattaforma: "twitch", link, src: slug && /^[\w-]+$/.test(slug) ? clipTwitch(slug, domini) : null };
+  }
 
   if (h === "fb.watch") return { piattaforma: "facebook", link, src: null };
   if (h === "facebook.com") {
@@ -104,10 +119,10 @@ export async function risolvi(link: string, fetchFn: typeof fetch = fetch): Prom
 // volte lo stesso link nello stesso build.
 const cache = new Map<string, Promise<Post>>();
 
-export function preparaPost(link: string, fetchFn: typeof fetch = fetch): Promise<Post> {
+export function preparaPost(link: string, fetchFn: typeof fetch = fetch, domini: string[] = []): Promise<Post> {
   let p = cache.get(link);
   if (!p) {
-    p = risolvi(link, fetchFn).then((finale) => ({ ...riconosci(finale), link }));
+    p = risolvi(link, fetchFn).then((finale) => ({ ...riconosci(finale, domini), link }));
     cache.set(link, p);
   }
   return p;

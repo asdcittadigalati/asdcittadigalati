@@ -55,6 +55,31 @@ describe("riconosci: Facebook", () => {
   });
 });
 
+describe("riconosci: Twitch (clip)", () => {
+  const DOMINI = ["asdcittadigalati.it", "www.asdcittadigalati.it", "localhost"];
+  const SRC =
+    "https://clips.twitch.tv/embed?clip=GoldenGrossBee-Ab12&parent=asdcittadigalati.it&parent=www.asdcittadigalati.it&parent=localhost&autoplay=false";
+  it("clips.twitch.tv/NOME, con i domini del sito nel parametro parent", () => {
+    expect(riconosci("https://clips.twitch.tv/GoldenGrossBee-Ab12?tt_medium=mobile", DOMINI)).toEqual({
+      piattaforma: "twitch",
+      link: "https://clips.twitch.tv/GoldenGrossBee-Ab12?tt_medium=mobile",
+      src: SRC,
+    });
+  });
+  it("twitch.tv/canale/clip/NOME, anche da telefono", () => {
+    expect(riconosci("https://www.twitch.tv/cittadigalati/clip/GoldenGrossBee-Ab12", DOMINI).src).toBe(SRC);
+    expect(riconosci("https://m.twitch.tv/cittadigalati/clip/GoldenGrossBee-Ab12?filter=clips", DOMINI).src).toBe(SRC);
+  });
+  it("l'indirizzo gia' pronto per incorporare funziona lo stesso", () => {
+    expect(riconosci("https://clips.twitch.tv/embed?clip=GoldenGrossBee-Ab12&parent=altro.it", DOMINI).src).toBe(SRC);
+  });
+  it("un canale o un video intero non e' una clip: scheda-link", () => {
+    expect(riconosci("https://www.twitch.tv/cittadigalati", DOMINI)).toMatchObject({ piattaforma: "twitch", src: null });
+    expect(riconosci("https://www.twitch.tv/videos/2277656159", DOMINI)).toMatchObject({ piattaforma: "twitch", src: null });
+    expect(riconosci("https://clips.twitch.tv/", DOMINI)).toMatchObject({ piattaforma: "twitch", src: null });
+  });
+});
+
 describe("riconosci: il resto", () => {
   it("testo che non e' un indirizzo", () => {
     expect(riconosci("ciao")).toEqual({ piattaforma: "altro", link: "ciao", src: null });
@@ -117,6 +142,16 @@ describe("risolvi", () => {
 });
 
 describe("preparaPost", () => {
+  it("una clip Twitch non ha bisogno di risolvere nulla e porta i domini del sito", async () => {
+    const f = vi.fn();
+    const p = await preparaPost("https://clips.twitch.tv/ClipProva-Zz9", f as unknown as typeof fetch, ["sito.it", "localhost"]);
+    expect(p).toEqual({
+      piattaforma: "twitch",
+      link: "https://clips.twitch.tv/ClipProva-Zz9",
+      src: "https://clips.twitch.tv/embed?clip=ClipProva-Zz9&parent=sito.it&parent=localhost&autoplay=false",
+    });
+    expect(f).not.toHaveBeenCalled();
+  });
   it("risolve e riconosce, tenendo il link incollato", async () => {
     const f = vi.fn().mockResolvedValueOnce(redirect("https://www.tiktok.com/@a/video/7400000000000000001"));
     expect(await preparaPost("https://vm.tiktok.com/ZMprep/", f as unknown as typeof fetch)).toEqual({
