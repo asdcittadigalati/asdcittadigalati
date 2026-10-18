@@ -1,5 +1,5 @@
 ---
-nome: Giuseppe Vicario
+nome: Vicario Giuseppe
 incarico: Consigliere, direttore sportivo
 sezione: Società
 ordine: 3
