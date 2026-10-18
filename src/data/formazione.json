@@ -3,26 +3,25 @@
   "schieramento": {
     "modulo": "4-2-3-1",
     "portiere": "Andrea Bontempo",
-    "terzino_sx": "Tommaso Truglio",
+    "terzino_sx": "Samuele Vilardo",
     "centrale_sx": "Giuseppe Truglio",
     "centrale_dx": "Bautista Ferreyra Waimann",
     "terzino_dx": "Igor Conti Canalaro",
     "punta": "Michele Orlando",
     "mediano_sx": "Fernando Venuto",
-    "mediano_dx": "Giorgio Vicario",
-    "trequartista_sx": "Davide Vicario",
-    "trequartista": "Eric Campisi",
+    "mediano_dx": "Eric Campisi",
+    "trequartista_sx": "Younes Rhammady Benkhassi",
+    "trequartista": "Davide Vicario",
     "trequartista_dx": "Younes Rhammady Benkhassi"
   },
   "panchina": [
     "Emanuele Serio",
     "Ali El Idrissi",
-    "Basilio Campisi",
-    "Giuseppe Isidoro Truglio",
-    "Vincenzo Vicari",
-    "Samuele Vilardo",
     "Matteo Serio",
-    "Marco Virgilio",
+    "Parafioriti Giuseppe Manuel",
+    "Truglio Salvatore",
+    "Giorgio Vicario",
+    "Basilio Campisi",
     "Massimiliano Bontempo"
   ]
 }
