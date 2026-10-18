@@ -4,8 +4,8 @@
   "inizio": "2026-10-18T14:58:00+02:00",
   "urlVideo": "https://www.twitch.tv/cittadigalati?sr=a",
   "tabellino": {
-    "avversario": "1207604",
-    "inCasa": true,
+    "avversario": "",
+    "inCasa": false,
     "nomeCortoNostro": "",
     "nomeCortoAvversario": "",
     "fuoriElenco": {
@@ -14,8 +14,8 @@
     },
     "golNostri": 0,
     "golAvversari": 0,
-    "inizio1": "2026-10-18T15:30:00+02:00",
-    "fine1": "2026-10-18T16:15:00+02:00",
+    "inizio1": "",
+    "fine1": "",
     "inizio2": "",
     "fine2": ""
   }
