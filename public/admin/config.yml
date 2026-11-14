@@ -321,6 +321,9 @@ collections:
               - { label: "Titolo", name: "titolo", widget: "string" }
               - { label: "Testo", name: "testo", widget: "text" }
 
+  - name: "diretta-live"
+    label: "Diretta"
+    files:
       - name: "diretta"
         label: "Diretta della partita"
         file: "src/data/diretta.json"

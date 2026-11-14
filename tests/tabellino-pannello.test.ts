@@ -7,7 +7,7 @@ import diretta from "../src/data/diretta.json";
 
 type Campo = { name: string; widget?: string; format?: string; fields?: Campo[]; options?: { label: string; value: string }[] };
 const config = yaml.load(readFileSync("public/admin/config.yml", "utf8")) as { collections: { name: string; files?: { name: string; fields: Campo[] }[] }[] };
-const voce = config.collections.find((c) => c.name === "impostazioni")!.files!.find((f) => f.name === "diretta")!;
+const voce = config.collections.find((c) => c.name === "diretta-live")!.files!.find((f) => f.name === "diretta")!;
 const tabellino = voce.fields.find((f) => f.name === "tabellino")!;
 const campo = (nome: string) => tabellino.fields!.find((f) => f.name === nome)!;
 const elenco = squadre as Squadra[];
