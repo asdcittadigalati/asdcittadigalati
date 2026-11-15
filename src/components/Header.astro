@@ -1,7 +1,7 @@
 ---
 const items = [
-  ["/", "Home"], ["/squadra", "Squadra"], ["/stagione", "Stagione"],
-  ["/social", "Social"], ["/club", "Club"],
+  ["/", "Home"], ["/squadra", "Squadra"], ["/#diretta", "Diretta"], ["/clip", "CLIP"],
+  ["/stagione", "Stagione"], ["/social", "Social"], ["/club", "Club"],
   ["/ringraziamenti", "Ringraziamenti"], ["/contatti", "Contatti"],
 ];
 const path = Astro.url.pathname;
@@ -36,7 +36,7 @@ const path = Astro.url.pathname;
   .menu { display: none; }
   .menu summary { cursor: pointer; list-style: none; color: var(--text); font-family: var(--font-body); padding: 0.4rem 0.6rem; }
   .menu summary::-webkit-details-marker { display: none; }
-  @media (max-width: 720px) {
+  @media (max-width: 960px) {
     .nav-desktop { display: none; }
     .menu { display: block; }
     .menu ul { flex-direction: column; gap: 0.75rem; padding-top: 0.75rem; }

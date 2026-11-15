@@ -53,6 +53,31 @@ collections:
         default: "{{now}}"
         hint: "Si compila da sola. Cambiala solo se aggiungi un post vecchio: i post sono in ordine dal piu' recente."
 
+  - name: "clip"
+    label: "CLIP"
+    label_singular: "Clip"
+    description: "Aggiungi clip pubbliche di Instagram, Facebook, TikTok o Twitch. Puoi inserirne quante ne vuoi: premi + per aggiungerne un'altra."
+    folder: "src/content/clip"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}{{minute}}{{second}}"
+    identifier_field: "link"
+    summary: "{{date | date('DD/MM/YYYY')}} · {{link}}"
+    sortable_fields: ["date"]
+    format: "frontmatter"
+    fields:
+      - label: "Link alla clip"
+        name: "link"
+        widget: "string"
+        required: true
+        hint: "Apri la clip, tocca Condividi (o i tre puntini), scegli Copia link e incollalo qui. La clip deve essere pubblica."
+        pattern: ["^https://([a-z]+\\.)?(instagram\\.com|facebook\\.com|fb\\.watch|tiktok\\.com|twitch\\.tv)/\\S+$", "Serve un link pubblico di Instagram, Facebook, TikTok o Twitch che inizi con https://"]
+      - label: "Data"
+        name: "date"
+        widget: "datetime"
+        required: true
+        default: "{{now}}"
+        hint: "Si compila da sola. Le clip sono mostrate dalla piu' recente."
+
   - name: "giocatori"
     label: "Rosa"
     folder: "src/content/giocatori"

@@ -50,4 +50,12 @@ const social = defineCollection({
     date: z.coerce.date(),
   }),
 });
-export const collections = { giocatori, staff, sponsor, social };
+// Clip video pubbliche aggiunte dal pannello (vedi src/lib/social.ts).
+const clip = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/clip" }),
+  schema: z.object({
+    link: z.string().url(),
+    date: z.coerce.date(),
+  }),
+});
+export const collections = { giocatori, staff, sponsor, social, clip };

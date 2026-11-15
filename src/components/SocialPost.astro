@@ -1,5 +1,5 @@
 ---
-// Un post social dentro la cornice del sito. Il riquadro ufficiale della
+// Un contenuto social dentro la cornice del sito. Il riquadro ufficiale della
 // piattaforma sta in EmbedConsenso: senza consenso resta un segnaposto
 // leggero, con il link per aprire il post sul social.
 import EmbedConsenso from "./EmbedConsenso.astro";
@@ -8,8 +8,9 @@ import { preparaPost, ALTEZZA, NOME } from "../lib/social";
 interface Props {
   link: string;
   date: Date;
+  tipo?: "post" | "clip";
 }
-const { link, date } = Astro.props;
+const { link, date, tipo = "post" } = Astro.props;
 // Le clip Twitch vogliono i domini da cui il sito si apre (come DirettaLive).
 const dominio = Astro.site?.hostname ?? "localhost";
 const post = await preparaPost(link, fetch, [dominio, `www.${dominio}`, "localhost"]);
@@ -23,16 +24,16 @@ const quando = date.toLocaleDateString("it-IT", { day: "numeric", month: "short"
   {post.src && post.piattaforma !== "altro" ? (
     <EmbedConsenso
       src={post.src}
-      title={`Post ${nome} del ${quando}`}
+      title={`${tipo === "clip" ? "Clip" : "Post"} ${nome} del ${quando}`}
       servizio={nome}
       altezza={`${ALTEZZA[post.piattaforma]}px`}
       apri={link}
-      video={post.piattaforma === "twitch"}
-      nota={`Il post è ospitato da ${nome}: per mostrarlo qui il browser deve collegarsi ai loro server, che possono registrare il tuo indirizzo IP e impostare cookie propri.`}
+      video={post.piattaforma === "twitch" || tipo === "clip"}
+      nota={`Il contenuto è ospitato da ${nome}: per mostrarlo qui il browser deve collegarsi ai loro server, che possono registrare il tuo indirizzo IP e impostare cookie propri.`}
     />
   ) : (
     <a class="solo-link" href={link} target="_blank" rel="noopener noreferrer">
-      Apri il post su {nome}
+      Apri {tipo === "clip" ? "la clip" : "il post"} su {nome}
     </a>
   )}
 </article>

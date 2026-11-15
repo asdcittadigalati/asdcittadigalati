@@ -1,0 +1,56 @@
+---
+// Clip pubbliche aggiunte dal pannello Sveltia, dalla piu' recente.
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import SocialPost from "../components/SocialPost.astro";
+
+const clip = (await getCollection("clip")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+<Base title="CLIP" description="Le clip dell'ASD Città di Galati, raccolte in un solo posto.">
+  <main id="main" tabindex="-1">
+    <section class="clip-page" aria-labelledby="clip-title">
+      <div class="section-inner">
+        <h1 id="clip-title" class="font-display">CLIP</h1>
+        <p class="kicker">I momenti della squadra, raccolti in un solo posto.</p>
+        {clip.length > 0 ? (
+          <div class="clip-grid">
+            {clip.map((c) => <SocialPost link={c.data.link} date={c.data.date} tipo="clip" />)}
+          </div>
+        ) : (
+          <p class="vuoto">Le prime clip arriveranno qui.</p>
+        )}
+      </div>
+    </section>
+  </main>
+</Base>
+<style>
+  .clip-page {
+    padding: clamp(3rem, 8vw, 6rem) clamp(1rem, 4vw, 2.5rem) clamp(3rem, 8vw, 6rem);
+  }
+  .section-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: clamp(2.25rem, 6vw, 3.5rem);
+    margin: 0 0 0.5rem;
+  }
+  .kicker {
+    color: var(--oro);
+    margin: 0 0 2.5rem;
+  }
+  .clip-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem 1.5rem;
+    align-items: start;
+  }
+  @media (min-width: 720px) {
+    .clip-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1080px) {
+    .clip-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
