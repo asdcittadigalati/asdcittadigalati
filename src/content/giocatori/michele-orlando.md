@@ -1,6 +1,6 @@
 ---
-nome: Orlando Michele
-ruolo: Attaccante
+nome: Vuoto
+ruolo: ''
 numero: 9
-foto: /img/uploads/michele-orlando.webp
+foto: ''
 ---
