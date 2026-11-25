@@ -1,6 +1,6 @@
 ---
 nome: Vuoto
 ruolo: ''
-numero: 9
+numero: null
 foto: ''
 ---
